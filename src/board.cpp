@@ -110,8 +110,8 @@ template <Move_types types, bool side> void Position::generate_pawn(Movelist& mo
         curr_moves = curr_board & promote_mask;
         while (curr_moves != 0) {
             piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 9;
-            else end = piece_location + 7;
+            if constexpr (side) end = piece_location - 7;
+            else end = piece_location + 9;
             movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
             movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
             movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
