@@ -82,7 +82,7 @@ public:
     template <bool update_hash> void remove_add_piece(int sq, int piece);
     void make_move(Move move);
     void undo_move(Move move);
-    //bool is_legal(Move move);
+    bool is_legal(Move move);
 };
 
 #endif

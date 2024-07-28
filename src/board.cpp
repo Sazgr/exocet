@@ -428,22 +428,15 @@ void Position::undo_move(Move move) {
     --ply;
 }
 
-/*bool Position::is_legal(Move move) {
-    if (move.type() == k_castling) {
-        if (move.piece() == black_king) {
-            return !attackersTo(5, WHITE) && !attackersTo(6, WHITE);
-        } else {
-            return !attackersTo(61, BLACK) && !attackersTo(62, BLACK);
-        }
-    if (move.type() == q_castling) {
-        if (move.piece() == black_king) {
-            return !attackersTo(2, WHITE) && !attackersTo(3, WHITE);
-        } else {
-            return !attackersTo(58, BLACK) && !attackersTo(59, BLACK);
-        }
+bool Position::is_legal(Move move) {
+    if (move.flag() == k_castling) {
+        return !attacks_to((move.start() & 56) + 5, occupied, !side_to_move) && !attacks_to((move.start() & 56) + 6, occupied, !side_to_move);
+    }
+    if (move.flag() == q_castling) {
+        return !attacks_to((move.start() & 56) + 2, occupied, !side_to_move) && !attacks_to((move.start() & 56) + 3, occupied, !side_to_move);
     }
 
-    if ((move.piece() >> 1) == 5)
+    /*if ((move.piece() >> 1) == 5)
         return !attackers_to(move.end(), !side_to_move, occupied ^ move.start());
 
     if (!checkers) {
@@ -457,7 +450,7 @@ void Position::undo_move(Move move) {
     }
 
     if (piece_type(movedPc) == pawn)
-        return !(blockersForKing[sideToMove] & from);
+        return !(blockersForKing[sideToMove] & from);*/
 
     return true;
-}*/
+}
