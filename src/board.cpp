@@ -7,6 +7,7 @@
 
 Position::Position() {
     init_magics();
+    recalculate_zobrist();
 }
 
 template <bool side> u64 Position::pawns_forward_one(u64 pawns) {
@@ -123,6 +124,7 @@ template <Move_types types, bool side> void Position::generate_pawn(Movelist& mo
             else end = piece_location + 9;
             movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
         }
+
         curr_board = pawn_attacks[!side][ep_square] & pieces[side];//possible capturing pawns
         while (curr_board != 0) {
             piece_location = pop_lsb(curr_board);
@@ -281,10 +283,10 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
                     queen_castle = castling_rights[ply][0] != 64;
                     shift = 0;
                 }
-                if (king_castle && !((occupied >> shift) & 0x90ull)) { //kingside
+                if (king_castle && !((occupied >> shift) & 0x60ull)) { //kingside
                     movelist.add(Move{black_king + side, king_location, empty_square, castling_rights[ply][side * 2 + 1], k_castling});
                 }
-                if (queen_castle && !((occupied >> shift) & 0x11ull)) { //queenside
+                if (queen_castle && !((occupied >> shift) & 0xeull)) { //queenside
                     movelist.add(Move{black_king + side, king_location, empty_square, castling_rights[ply][side * 2], q_castling});
                 }
             }
@@ -452,5 +454,109 @@ bool Position::is_legal(Move move) {
     if (piece_type(movedPc) == pawn)
         return !(blockersForKing[sideToMove] & from);*/
 
+    return true;
+}
+
+void Position::recalculate_zobrist() {
+    hash[ply] = 0;
+    for (int i{0}; i < 64; ++i) hash[ply] ^= zobrist_pieces[board[i]][i];
+    if (!side_to_move) hash[ply] ^= zobrist_black;
+    for (int i{}; i < 4; ++i) {
+        hash[ply] ^= zobrist_castling[castling_rights[ply][i]];
+    }
+    hash[ply] ^= zobrist_enpassant[enpassant_square[ply]];
+}
+
+bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fen_castling, std::string fen_ep, std::string fen_hmove_clock, std::string fen_fmove_counter) {
+    int sq = 0;
+    ply = 0;
+
+    for (int i{}; i<64; ++i) remove_piece<false>(i);
+    for (auto pos = fen_pos.begin(); pos != fen_pos.end(); ++pos) {
+        switch (*pos) {
+            case 'p': add_piece<false>(sq, black_pawn); break;
+            case 'n': add_piece<false>(sq, black_knight); break;
+            case 'b': add_piece<false>(sq, black_bishop); break;
+            case 'r': add_piece<false>(sq, black_rook); break;
+            case 'q': add_piece<false>(sq, black_queen); break;
+            case 'k': add_piece<false>(sq, black_king); break;
+            case 'P': add_piece<false>(sq, white_pawn); break;
+            case 'N': add_piece<false>(sq, white_knight); break;
+            case 'B': add_piece<false>(sq, white_bishop); break;
+            case 'R': add_piece<false>(sq, white_rook); break;
+            case 'Q': add_piece<false>(sq, white_queen); break;
+            case 'K': add_piece<false>(sq, white_king); break;
+            case '/': --sq; break;
+            case '1': break;
+            case '2': ++sq; break;
+            case '3': sq += 2; break;
+            case '4': sq += 3; break;
+            case '5': sq += 4; break;
+            case '6': sq += 5; break;
+            case '7': sq += 6; break;
+            case '8': sq += 7; break;
+            default: return false;
+        }
+        ++sq;
+    }
+
+    if (fen_stm == "w") side_to_move = true;
+    else if (fen_stm == "b") side_to_move = false;
+    else return false;
+
+    castling_rights[0][0] = castling_rights[0][1] = castling_rights[0][2] = castling_rights[0][3] = 64;
+    for (auto pos = fen_castling.begin(); pos != fen_castling.end(); ++pos) {
+        switch (*pos) {
+            case '-': break;
+            case 'q': castling_rights[0][0] = 0; break;
+            case 'k': castling_rights[0][1] = 7; break;
+            case 'Q': castling_rights[0][2] = 56; break;
+            case 'K': castling_rights[0][3] = 63; break;
+            default: return false;
+        }
+    }
+
+    if (fen_ep == "-") enpassant_square[0] = 64;
+    else if (fen_ep.size() == 2) enpassant_square[0] = (static_cast<int>(fen_ep[0]) - 97) + 8 * (56 - static_cast<int>(fen_ep[1])); //ascii 'a' = 97 '8' = 56
+    else return false;
+
+    halfmove_clock[0] = stoi(fen_hmove_clock);
+
+    recalculate_zobrist();
+    return true;
+}
+
+bool Position::parse_move(Move& out, std::string move) {
+    if (move.size() < 4 || move.size() > 5) return false;
+    int start = (static_cast<int>(move[0]) - 97) + 8 * (56 - static_cast<int>(move[1]));//ascii 'a' = 97 , '8' = 56
+    int end = (static_cast<int>(move[2]) - 97) + 8 * (56 - static_cast<int>(move[3]));
+    if ((~63 & start) || (~63 & end)) return false; //out-of-bound squares
+    int piece = board[start];
+    int captured = board[end];
+    int flag{none};
+    if (move.size() == 5) {
+        switch (move[4]) {
+            case 'n': flag = knight_pr; break;
+            case 'b': flag = bishop_pr; break;
+            case 'r': flag = rook_pr; break;
+            case 'q': flag = queen_pr; break;
+        }
+    } else {
+        if (piece == black_king + side_to_move && end - start == 2) {
+            flag = k_castling;
+            end = start + 3;
+            captured = empty_square;
+        }
+        if (piece == black_king + side_to_move && end - start == -2) {
+            flag = q_castling;
+            end = start - 4;
+            captured = empty_square;
+        }
+        if (piece == black_pawn + side_to_move && (abs(end - start) == 7 || abs(end - start) == 9) && captured == empty_square) {
+            flag = enpassant;
+            captured = piece ^ 1;
+        }
+    }
+    out = Move{piece, start, captured, end, flag};
     return true;
 }

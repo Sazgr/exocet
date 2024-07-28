@@ -4,6 +4,7 @@
 #include "fixed_vector.h"
 #include "magics.h"
 #include "types.h"
+#include <string>
 
 enum Piece_types {
     black_pawn,
@@ -83,6 +84,9 @@ public:
     void make_move(Move move);
     void undo_move(Move move);
     bool is_legal(Move move);
+    void recalculate_zobrist();
+    bool load_fen(std::string fen_pos, std::string fen_stm, std::string fen_castling, std::string fen_ep, std::string fen_hmove_clock, std::string fen_fmove_counter);
+    bool parse_move(Move& out, std::string move);
 };
 
 #endif
