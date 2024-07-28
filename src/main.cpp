@@ -6,10 +6,6 @@
 int main() {
     Position position;
     int depth = 6;
-    //position.make_move(Move{1, 48, 12, 32});
-    //position.make_move(Move{2, 1, 12, 16});
-    //position.make_move(Move{1, 32, 12, 24});
-    //position.make_move(Move{0, 9, 12, 25});
     /*std::vector<std::pair<Move, int>> list{};
     int result = perft_split(position, depth, list);
     std::cout << result << '\n';
@@ -33,9 +29,15 @@ u64 perft(Position& position, int depth) {
     else position.generate_stage<all, false>(movelist);
     //if (depth == 6) std::cout << movelist.size() << '\n';
     for (int i{}; i<movelist.size(); ++i) {
-        position.make_move(movelist[i]);
-        if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) total += perft(position, depth - 1);
-        position.undo_move(movelist[i]);
+        if (position.is_legal(movelist[i])) {
+            position.make_move(movelist[i]);
+            if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) {
+                total += perft(position, depth - 1);
+            } else {
+                std::cout << movelist[i] << ' ' << movelist[i].flag() << '\n';
+            }
+            position.undo_move(movelist[i]);
+        }
     }
     return total;
 }
@@ -49,13 +51,17 @@ u64 perft_split(Position& position, int depth, std::vector<std::pair<Move, int>>
         if (position.side_to_move) position.generate_stage<all, true>(movelist);
         else position.generate_stage<all, false>(movelist);
         for (int i{}; i < movelist.size(); ++i) {
-            position.make_move(movelist[i]);
-            if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) {
-                int result = perft(position, depth - 1);
-                list.push_back({movelist[i], result});
-                total += result;
+            if (position.is_legal(movelist[i])) {
+                position.make_move(movelist[i]);
+                if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) {
+                    int result = perft(position, depth - 1);
+                    list.push_back({movelist[i], result});
+                    total += result;
+                } else {
+                    std::cout << movelist[i] << ' ' << movelist[i].flag() << '\n';
+                }
+                position.undo_move(movelist[i]);
             }
-            position.undo_move(movelist[i]);
         }
         return total;
     }
