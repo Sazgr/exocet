@@ -73,94 +73,6 @@ u64 Position::checkers(u64 occ) {
     return attacks_to(square, occ, !side_to_move);
 }
 
-template <Move_types types, bool side> void Position::generate_pawn(Movelist& movelist, u64 opp_pieces) {
-    constexpr bool gen_quiet = types & 1;
-    constexpr bool gen_noisy = types & 2;
-
-    u64 promote_mask{promotion_rank<side>()};
-    int ep_square = enpassant_square[ply];
-    u64 ep_bb = 1ull << ep_square;
-
-    u64 curr_board, curr_moves;
-    int piece_location, end;
-
-    if constexpr (gen_noisy) {
-        //left capture
-        curr_board = pieces[side] & pawns_backward_right<side>(opp_pieces);
-        curr_moves = curr_board & promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 9;
-            else end = piece_location + 7;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, queen_pr});
-        }
-        curr_moves = curr_board & ~promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 9;
-            else end = piece_location + 7;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
-        }
-
-        //right capture
-        curr_board = pieces[side] & pawns_backward_left<side>(opp_pieces);
-        curr_moves = curr_board & promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 7;
-            else end = piece_location + 9;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, queen_pr});
-        }
-        curr_moves = curr_board & ~promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 7;
-            else end = piece_location + 9;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
-        }
-
-        curr_board = pawn_attacks[!side][ep_square] & pieces[side];//possible capturing pawns
-        while (curr_board != 0) {
-            piece_location = pop_lsb(curr_board);
-            movelist.add(Move{board[piece_location], piece_location, 12, ep_square, enpassant});
-        }
-    }
-    if constexpr (gen_quiet) {
-        curr_board = pieces[side] & pawns_backward_one<side>(~occupied);
-        curr_moves = curr_board & promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 8;
-            else end = piece_location + 8;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, queen_pr});
-        }
-        curr_moves = curr_board & ~promote_mask;
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 8;
-            else end = piece_location + 8;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
-        }
-        //double push
-        curr_moves = curr_board & second_rank<side>() & pawns_backward_two<side>(~occupied);
-        while (curr_moves != 0) {
-            piece_location = pop_lsb(curr_moves);
-            if constexpr (side) end = piece_location - 16;
-            else end = piece_location + 16;
-            movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
-        }
-    }
-}
-
 template <Move_types types, bool side> void Position::generate_stage(Movelist& movelist) {
     assert(popcount(pieces[black_king]) == 1);
     assert(popcount(pieces[white_king]) == 1);
@@ -180,6 +92,10 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
     int piece_location;
     int end;
     int king_location = get_lsb(pieces[black_king + side]);
+
+    u64 promote_mask{promotion_rank<side>()};
+    int ep_square = enpassant_square[ply];
+    u64 ep_bb = 1ull << ep_square;
 
     u64 hv_pinmask{(xray_rook_attacks(occupied, own_pieces, king_location) & (pieces[black_rook + !side] | pieces[black_queen + !side]))};
     u64 dd_pinmask{(xray_bishop_attacks(occupied, own_pieces, king_location) & (pieces[black_bishop + !side] | pieces[black_queen + !side]))};
@@ -210,7 +126,31 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
         case 1: //single check
             targets &= between[get_lsb(curr_checkers)][king_location] ^ curr_checkers;
         case 0: // no check
-            generate_pawn<types, side>(movelist, opp_pieces);
+            curr_board = pieces[side] & ~promote_mask & not_pinned;//non-pinned non-promoting pawns
+            while (curr_board != 0) {
+                piece_location = pop_lsb(curr_board);
+                if constexpr (gen_noisy) curr_moves = pawn_attacks[side][piece_location] & opp_pieces;
+                if constexpr (gen_quiet) curr_moves |= file_attacks(occupied, piece_location) & pawn_pushes[side][piece_location] & ~occupied;
+                curr_moves &= targets;
+                while (curr_moves != 0) {
+                    end = pop_lsb(curr_moves);
+                    movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
+                }
+            }
+            curr_board = pieces[side] & promote_mask & not_pinned;//non-pinned promoting pawns
+            while (curr_board != 0) {
+                piece_location = pop_lsb(curr_board);
+                if constexpr (gen_noisy) curr_moves = pawn_attacks[side][piece_location] & opp_pieces;
+                if constexpr (gen_quiet) curr_moves |= pawn_pushes[side][piece_location] & ~occupied;
+                curr_moves &= targets;
+                while (curr_moves != 0) {
+                    end = pop_lsb(curr_moves);
+                    movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
+                    movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
+                    movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
+                    movelist.add(Move{board[piece_location], piece_location, board[end], end, queen_pr});
+                }
+            }
 
             //non-pinned knights
             curr_board = pieces[side + 2] & not_pinned;
@@ -245,7 +185,56 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
                 }
             }
 
+            //en passant
+            if constexpr (gen_noisy) {
+                curr_board = pawn_attacks[!side][ep_square] & pieces[side];//possible capturing pawns
+                while (curr_board != 0) {
+                    piece_location = pop_lsb(curr_board);
+                    movelist.add(Move{board[piece_location], piece_location, 12, ep_square, enpassant});
+                }
+            }
             if (popcount(curr_checkers)) return; //if we are in check don't generate moves of pinned pieces and castling
+
+            //pinned non-promoting pawns
+            if constexpr (gen_quiet) {
+                curr_board = pieces[side] & ~promote_mask & hv_pinmask;
+                while (curr_board != 0) {
+                    piece_location = pop_lsb(curr_board);
+                    curr_moves |= file_attacks(occupied, piece_location) & pawn_pushes[side][piece_location] & (~occupied) & hv_pinmask;
+                    while (curr_moves != 0) {
+                        end = pop_lsb(curr_moves);
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
+                    }
+                }
+            }
+            if constexpr (gen_noisy) {
+                curr_board = pieces[side] & ~promote_mask & dd_pinmask;
+                while (curr_board != 0) {
+                    piece_location = pop_lsb(curr_board);
+                    curr_moves = pawn_attacks[side][piece_location] & opp_pieces & dd_pinmask;
+                    while (curr_moves != 0) {
+                        end = pop_lsb(curr_moves);
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
+                    }
+                }
+            }
+
+            //pinned promoting pawns
+            curr_board = pieces[side] & promote_mask & dd_pinmask;
+            //note: hv-pinned pawns on 7th rank cannot push (or capture) in either case
+            if constexpr (gen_noisy) {
+                while (curr_board != 0) {
+                    piece_location = pop_lsb(curr_board);
+                    curr_moves = pawn_attacks[side][piece_location] & opp_pieces & dd_pinmask;
+                    while (curr_moves != 0) {
+                        end = pop_lsb(curr_moves);
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, knight_pr});
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, bishop_pr});
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, rook_pr});
+                        movelist.add(Move{board[piece_location], piece_location, board[end], end, queen_pr});
+                    }
+                }
+            }
 
             //note: pinned knights cannot move
 
@@ -438,21 +427,14 @@ bool Position::is_legal(Move move) {
         return !attacks_to((move.start() & 56) + 2, occupied, !side_to_move) && !attacks_to((move.start() & 56) + 3, occupied, !side_to_move);
     }
 
-    /*if ((move.piece() >> 1) == 5)
-        return !attackers_to(move.end(), !side_to_move, occupied ^ move.start());
-
-    if (!checkers) {
-        if (LINE_BB[from][to] & kingSquare(sideToMove))
-            return true;
+    //king moves
+    if ((move.piece() >> 1) == 5) {
+        return !attacks_to(move.end(), occupied ^ (1ull << move.start()), !side_to_move);
     }
 
-    if (move_type(move) == MT_EN_PASSANT) {
-        Square capSq = (sideToMove == WHITE ? epSquare - 8 : epSquare + 8);
-        return !slidingAttackersTo(kingSquare(sideToMove), ~sideToMove, pieces() ^ from ^ capSq ^ to);
+    if (move.flag() == enpassant) {
+        return !attacks_to(get_lsb(pieces[black_king + side_to_move]), occupied ^ (1ull << move.start()) ^ (1ull << move.end()) ^ (1ull << (move.end() ^ 8)), !side_to_move);
     }
-
-    if (piece_type(movedPc) == pawn)
-        return !(blockersForKing[sideToMove] & from);*/
 
     return true;
 }
