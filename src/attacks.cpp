@@ -44,6 +44,14 @@ u64 file_attacks(u64 occ, int square) {
     return positive_ray_attacks(occ, south, square) | negative_ray_attacks(occ, north, square);
 }
 
+template <bool side> u64 forward_attacks(u64 occ, int square) {
+    if constexpr (side) return negative_ray_attacks(occ, north, square);
+    else return positive_ray_attacks(occ, south, square);
+}
+
+template u64 forward_attacks<false>(u64 occ, int square);
+template u64 forward_attacks<true>(u64 occ, int square);
+
 void init_magics() {
     for (int slider_loc{}; slider_loc < 64; ++slider_loc) { //bishops
         u64 attack_mask = bishop_premask[slider_loc];

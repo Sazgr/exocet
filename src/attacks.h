@@ -9,6 +9,7 @@ u64 diagonal_attacks(u64 occ, int square);
 u64 antidiagonal_attacks(u64 occ, int square);
 u64 rank_attacks(u64 occ, int square);
 u64 file_attacks(u64 occ, int square);
+template <bool side> u64 forward_attacks(u64 occ, int square);
 void init_magics();
 u64 classical_rook_attacks(u64 occ, int square);
 u64 classical_bishop_attacks(u64 occ, int square);

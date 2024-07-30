@@ -130,7 +130,7 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
             while (curr_board != 0) {
                 piece_location = pop_lsb(curr_board);
                 if constexpr (gen_noisy) curr_moves = pawn_attacks[side][piece_location] & opp_pieces;
-                if constexpr (gen_quiet) curr_moves |= file_attacks(occupied, piece_location) & pawn_pushes[side][piece_location] & ~occupied;
+                if constexpr (gen_quiet) curr_moves |= forward_attacks<side>(occupied, piece_location) & pawn_pushes[side][piece_location] & ~occupied;
                 curr_moves &= targets;
                 while (curr_moves != 0) {
                     end = pop_lsb(curr_moves);
@@ -200,7 +200,7 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
                 curr_board = pieces[side] & ~promote_mask & hv_pinmask;
                 while (curr_board != 0) {
                     piece_location = pop_lsb(curr_board);
-                    curr_moves |= file_attacks(occupied, piece_location) & pawn_pushes[side][piece_location] & (~occupied) & hv_pinmask;
+                    curr_moves |= forward_attacks<side>(occupied, piece_location) & pawn_pushes[side][piece_location] & (~occupied) & hv_pinmask;
                     while (curr_moves != 0) {
                         end = pop_lsb(curr_moves);
                         movelist.add(Move{board[piece_location], piece_location, board[end], end, none});
