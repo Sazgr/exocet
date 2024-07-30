@@ -1,15 +1,16 @@
 #include "bits.h"
 #include "board.h"
 #include "main.h"
+#include <cassert>
 #include <iostream>
 
 int main() {
     Position position;
     Move move;
     position.load_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R", "w", "KQkq", "-", "0", "1");
-    //position.parse_move(move, "d5d6"); position.make_move(move);
-    //position.parse_move(move, "h3g2"); position.make_move(move);
-    //position.parse_move(move, "d6c7"); position.make_move(move);
+    //position.parse_move(move, "h1g1"); position.make_move(move);
+    //position.parse_move(move, "e8d8"); position.make_move(move);
+    //position.parse_move(move, "e5c6"); position.make_move(move);
     int depth = 5;
 
     /*std::vector<std::pair<Move, int>> list{};
@@ -34,15 +35,11 @@ u64 perft(Position& position, int depth) {
     Movelist movelist;
     if (position.side_to_move) position.generate_stage<all, true>(movelist);
     else position.generate_stage<all, false>(movelist);
-    //if (depth == 6) std::cout << movelist.size() << '\n';
     for (int i{}; i<movelist.size(); ++i) {
         if (position.is_legal(movelist[i])) {
             position.make_move(movelist[i]);
-            if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) {
-                total += perft(position, depth - 1);
-            } else {
-                //std::cout << movelist[i] << ' ' << movelist[i].flag() << '\n';
-            }
+            assert(!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move));
+            total += perft(position, depth - 1);
             position.undo_move(movelist[i]);
         }
     }
@@ -60,13 +57,10 @@ u64 perft_split(Position& position, int depth, std::vector<std::pair<Move, int>>
         for (int i{}; i < movelist.size(); ++i) {
             if (position.is_legal(movelist[i])) {
                 position.make_move(movelist[i]);
-                if (!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move)) {
-                    int result = perft(position, depth - 1);
-                    list.push_back({movelist[i], result});
-                    total += result;
-                } else {
-                    //std::cout << movelist[i] << ' ' << movelist[i].flag() << '\n';
-                }
+                assert(!position.attacks_to(get_lsb(position.pieces[black_king + !position.side_to_move]), position.occupied, position.side_to_move));
+                int result = perft(position, depth - 1);
+                list.push_back({movelist[i], result});
+                total += result;
                 position.undo_move(movelist[i]);
             }
         }
