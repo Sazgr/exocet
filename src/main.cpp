@@ -1,6 +1,7 @@
 #include "bits.h"
 #include "board.h"
 #include "main.h"
+#include "timer.h"
 #include <cassert>
 #include <iostream>
 
@@ -12,6 +13,7 @@ int main() {
     //position.parse_move(move, "e8d8"); position.make_move(move);
     //position.parse_move(move, "e5c6"); position.make_move(move);
     int depth = 5;
+    Timer timer;
 
     /*std::vector<std::pair<Move, int>> list{};
     int result = perft_split(position, depth, list);
@@ -22,8 +24,10 @@ int main() {
     }//*/
 
     for (int i{1}; i <= depth; ++i) {
+        timer.reset();
         u64 result = perft(position, i);
-        std::cout << "perft " << i << " " << result << '\n';
+        double elapsed = timer.elapsed();
+        std::cout << "perft " << i << ": " << result << " nps: " << static_cast<int>(result / elapsed) << '\n';
     }//*/
 }
 
