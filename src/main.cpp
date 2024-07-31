@@ -35,6 +35,18 @@ u64 perft(Position& position, int depth) {
     if (depth == 0) {
         return 1;
     }
+    /*if (depth == 1) { //bulk counting
+        u64 total{};
+        Movelist movelist;
+        if (position.side_to_move) position.generate_stage<all, true>(movelist);
+        else position.generate_stage<all, false>(movelist);
+        for (int i{}; i<movelist.size(); ++i) {
+            if (position.is_legal(movelist[i])) {
+                ++total;
+            }
+        }
+        return total;
+    }*/
     u64 total{};
     Movelist movelist;
     if (position.side_to_move) position.generate_stage<all, true>(movelist);
