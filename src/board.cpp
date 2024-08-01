@@ -2,6 +2,7 @@
 #include "bits.h"
 #include "board.h"
 #include "lookup.h"
+#include "nnue.h"
 #include "zobrist.h"
 #include <cassert>
 
@@ -286,76 +287,93 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
 template void Position::generate_stage<all, false>(Movelist& movelist);
 template void Position::generate_stage<all, true>(Movelist& movelist);
 
-template <bool update_hash> void Position::remove_piece(int sq) {
+template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq, NNUE* nnue) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq];
+    }
+    if constexpr (update_nnue) {
+        if (board[sq] != empty_square) nnue_sub.push_back({index(board[sq], sq, 0, king_square[0]), index(board[sq], sq, 1, king_square[1])});
     }
     pieces[board[sq]] ^= (1ull << sq);
     pieces[12] ^= (1ull << sq);
     board[sq] = 12;
 }
 
-template <bool update_hash> void Position::add_piece(int sq, int piece) {
+template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, int piece, NNUE* nnue) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[piece][sq];
+    }
+    if constexpr (update_nnue) {
+        if (piece != empty_square) nnue_add.push_back({index(piece, sq, 0, king_square[0]), index(piece, sq, 1, king_square[1])});
     }
     pieces[12] ^= (1ull << sq);
     pieces[piece] ^= (1ull << sq);
     board[sq] = piece;
 }
 
-template <bool update_hash> void Position::remove_add_piece(int sq, int piece) {
+template <bool update_nnue, bool update_hash> void Position::remove_add_piece(int sq, int piece, NNUE* nnue) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq] ^ zobrist_pieces[piece][sq];
+    }
+    if constexpr (update_nnue) {
+        if (board[sq] != empty_square) nnue_sub.push_back({index(board[sq], sq, 0, king_square[0]), index(board[sq], sq, 1, king_square[1])});
+        if (piece != empty_square) nnue_add.push_back({index(piece, sq, 0, king_square[0]), index(piece, sq, 1, king_square[1])});
     }
     pieces[board[sq]] ^= (1ull << sq);
     pieces[piece] ^= (1ull << sq);
     board[sq] = piece;
 }
 
-void Position::make_move(Move move) {
+template <bool update_nnue> void Position::make_move(Move move, NNUE* nnue) {
+    if constexpr (update_nnue) {
+        assert(nnue_sub.empty());
+        nnue->push();
+    }
     ++ply;
     int start = move.start();
     int end = move.end();
     int piece = move.piece();
     int captured = move.captured();
+    int king_end = end;
     switch (move.flag()) {
         case none:
-            remove_piece<true>(start);
-            remove_add_piece<true>(end, piece);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_add_piece<update_nnue, true>(end, piece, nnue);
             break;
         case knight_pr:
-            remove_piece<true>(start);
-            remove_add_piece<true>(end, piece + 2);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_add_piece<update_nnue, true>(end, piece + 2, nnue);
             break;
         case bishop_pr:
-            remove_piece<true>(start);
-            remove_add_piece<true>(end, piece + 4);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_add_piece<update_nnue, true>(end, piece + 4, nnue);
             break;
         case rook_pr:
-            remove_piece<true>(start);
-            remove_add_piece<true>(end, piece + 6);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_add_piece<update_nnue, true>(end, piece + 6, nnue);
             break;
         case queen_pr:
-            remove_piece<true>(start);
-            remove_add_piece<true>(end, piece + 8);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_add_piece<update_nnue, true>(end, piece + 8, nnue);
             break;
         case k_castling:
-            remove_piece<true>(start);
-            remove_piece<true>(end);
-            add_piece<true>((start & 56) + 6, piece);
-            add_piece<true>((start & 56) + 5, piece - 4);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_piece<update_nnue, true>(end, nnue);
+            add_piece<update_nnue, true>((start & 56) + 6, piece, nnue);
+            add_piece<update_nnue, true>((start & 56) + 5, piece - 4, nnue);
+            king_end = (start & 56) + 6;
             break;
         case q_castling:
-            remove_piece<true>(start);
-            remove_piece<true>(end);
-            add_piece<true>((start & 56) + 2, piece);
-            add_piece<true>((start & 56) + 3, piece - 4);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_piece<update_nnue, true>(end, nnue);
+            add_piece<update_nnue, true>((start & 56) + 2, piece, nnue);
+            add_piece<update_nnue, true>((start & 56) + 3, piece - 4, nnue);
+            king_end = (start & 56) + 2;
             break;
         case enpassant:
-            remove_piece<true>(start);
-            remove_piece<true>(end ^ 8);//ep square
-            add_piece<true>(end, piece);
+            remove_piece<update_nnue, true>(start, nnue);
+            remove_piece<update_nnue, true>(end ^ 8, nnue);//ep square
+            add_piece<update_nnue, true>(end, piece, nnue);
             break;
     }
     enpassant_square[ply] = (!(piece & ~1) && end == (start ^ 16)) ? (end ^ 8) : 64;
@@ -377,10 +395,19 @@ void Position::make_move(Move move) {
         hash[ply] ^= zobrist_castling[castling_rights[ply - 1][i]] ^ zobrist_castling[castling_rights[ply][i]];
     }
     hash[ply] ^= zobrist_enpassant[enpassant_square[ply - 1]] ^ zobrist_enpassant[enpassant_square[ply]];
+    if constexpr (update_nnue) if (piece == black_king + side_to_move && (((start ^ king_end) & 4) || (buckets > 1 && king_buckets[start ^ (56 * side_to_move)] != king_buckets[king_end ^ (56 * side_to_move)]))) {
+        nnue_refresh = 1 + side_to_move;
+    }
+    king_square[0] = get_lsb(pieces[10]);
+    king_square[1] = get_lsb(pieces[11]);
     side_to_move = !side_to_move;
 }
 
-void Position::undo_move(Move move) {
+template void Position::make_move<false>(Move move, NNUE* nnue);
+template void Position::make_move<true>(Move move, NNUE* nnue);
+
+template <bool update_nnue> void Position::undo_move(Move move, NNUE* nnue) {
+    if constexpr (update_nnue) nnue->pop();
     side_to_move = !side_to_move;
     int start = move.start();
     int end = move.end();
@@ -388,36 +415,43 @@ void Position::undo_move(Move move) {
     int captured = move.captured();
     switch (move.flag()) {
         case none:
-            add_piece<false>(start, piece);
-            remove_add_piece<false>(end, captured);
+            add_piece<update_nnue, false>(start, piece, nnue);
+            remove_add_piece<update_nnue, false>(end, captured, nnue);
             break;
         case knight_pr:
         case bishop_pr:
         case rook_pr:
         case queen_pr:
-            add_piece<false>(start, piece);
-            remove_add_piece<false>(end, captured);
+            add_piece<update_nnue, false>(start, piece, nnue);
+            remove_add_piece<update_nnue, false>(end, captured, nnue);
             break;
         case k_castling:
-            remove_piece<false>((start & 56) + 6);
-            remove_piece<false>((start & 56) + 5);
-            add_piece<false>(start, piece);
-            add_piece<false>(end, piece - 4);
+            remove_piece<update_nnue, false>((start & 56) + 6, nnue);
+            remove_piece<update_nnue, false>((start & 56) + 5, nnue);
+            add_piece<update_nnue, false>(start, piece, nnue);
+            add_piece<update_nnue, false>(end, piece - 4, nnue);
             break;
         case q_castling:
-            remove_piece<false>((start & 56) + 2);
-            remove_piece<false>((start & 56) + 3);
-            add_piece<false>(start, piece);
-            add_piece<false>(end, piece - 4);
+            remove_piece<update_nnue, false>((start & 56) + 2, nnue);
+            remove_piece<update_nnue, false>((start & 56) + 3, nnue);
+            add_piece<update_nnue, false>(start, piece, nnue);
+            add_piece<update_nnue, false>(end, piece - 4, nnue);
             break;
         case enpassant:
-            add_piece<false>(start, piece);
-            remove_piece<false>(end);
-            add_piece<false>(end ^ 8, piece ^ 1);
+            add_piece<update_nnue, false>(start, piece, nnue);
+            remove_piece<update_nnue, false>(end, nnue);
+            add_piece<update_nnue, false>(end ^ 8, piece ^ 1, nnue);
             break;
     }
+    king_square[0] = get_lsb(pieces[10]);
+    king_square[1] = get_lsb(pieces[11]);
+    nnue_sub.clear();
+    nnue_add.clear();
     --ply;
 }
+
+template void Position::undo_move<false>(Move move, NNUE* nnue);
+template void Position::undo_move<true>(Move move, NNUE* nnue);
 
 bool Position::is_legal(Move move) {
     if (move.flag() == k_castling) {
@@ -439,6 +473,28 @@ bool Position::is_legal(Move move) {
     return true;
 }
 
+void Position::nnue_update_accumulator(NNUE& nnue) {
+    if (nnue_refresh) nnue.refresh_side(nnue_refresh - 1, *this);
+    if (nnue_sub.empty()) return;
+    if (nnue_sub.size() > nnue_add.size()) {
+        nnue.update_accumulator_sub_sub_add(3 - nnue_refresh, nnue_sub[0], nnue_sub[1], nnue_add[0]);
+        nnue_sub.pop_back();
+        nnue_sub.pop_back();
+        nnue_add.pop_back();
+        return;
+    }
+    while (!nnue_sub.empty()) {
+        nnue.update_accumulator_sub_add(3 - nnue_refresh, nnue_sub.back(), nnue_add.back());
+        nnue_sub.pop_back();
+        nnue_add.pop_back();
+    }
+}
+
+int Position::static_eval(NNUE& nnue) {
+    nnue_update_accumulator(nnue);
+    return nnue.evaluate(side_to_move);
+}
+
 void Position::recalculate_zobrist() {
     hash[ply] = 0;
     for (int i{0}; i < 64; ++i) hash[ply] ^= zobrist_pieces[board[i]][i];
@@ -453,21 +509,21 @@ bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fe
     int sq = 0;
     ply = 0;
 
-    for (int i{}; i<64; ++i) remove_piece<false>(i);
+    for (int i{}; i<64; ++i) remove_piece<false, false>(i);
     for (auto pos = fen_pos.begin(); pos != fen_pos.end(); ++pos) {
         switch (*pos) {
-            case 'p': add_piece<false>(sq, black_pawn); break;
-            case 'n': add_piece<false>(sq, black_knight); break;
-            case 'b': add_piece<false>(sq, black_bishop); break;
-            case 'r': add_piece<false>(sq, black_rook); break;
-            case 'q': add_piece<false>(sq, black_queen); break;
-            case 'k': add_piece<false>(sq, black_king); break;
-            case 'P': add_piece<false>(sq, white_pawn); break;
-            case 'N': add_piece<false>(sq, white_knight); break;
-            case 'B': add_piece<false>(sq, white_bishop); break;
-            case 'R': add_piece<false>(sq, white_rook); break;
-            case 'Q': add_piece<false>(sq, white_queen); break;
-            case 'K': add_piece<false>(sq, white_king); break;
+            case 'p': add_piece<false, false>(sq, black_pawn); break;
+            case 'n': add_piece<false, false>(sq, black_knight); break;
+            case 'b': add_piece<false, false>(sq, black_bishop); break;
+            case 'r': add_piece<false, false>(sq, black_rook); break;
+            case 'q': add_piece<false, false>(sq, black_queen); break;
+            case 'k': add_piece<false, false>(sq, black_king); break;
+            case 'P': add_piece<false, false>(sq, white_pawn); break;
+            case 'N': add_piece<false, false>(sq, white_knight); break;
+            case 'B': add_piece<false, false>(sq, white_bishop); break;
+            case 'R': add_piece<false, false>(sq, white_rook); break;
+            case 'Q': add_piece<false, false>(sq, white_queen); break;
+            case 'K': add_piece<false, false>(sq, white_king); break;
             case '/': --sq; break;
             case '1': break;
             case '2': ++sq; break;
@@ -481,6 +537,8 @@ bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fe
         }
         ++sq;
     }
+    king_square[0] = get_lsb(pieces[10]);
+    king_square[1] = get_lsb(pieces[11]);
 
     if (fen_stm == "w") side_to_move = true;
     else if (fen_stm == "b") side_to_move = false;
