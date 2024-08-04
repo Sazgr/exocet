@@ -11,54 +11,9 @@ Position::Position() {
     recalculate_zobrist();
 }
 
-template <bool side> u64 Position::pawns_forward_one(u64 pawns) {
-    if constexpr (side) return pawns >> 8;
-    else return pawns << 8;
-}
-
-template <bool side> u64 Position::pawns_backward_one(u64 pawns) {
-    if constexpr (side) return pawns << 8;
-    else return pawns >> 8;
-}
-
-template <bool side> u64 Position::pawns_forward_two(u64 pawns) {
-    if constexpr (side) return pawns >> 16;
-    else return pawns << 16;
-}
-
-template <bool side> u64 Position::pawns_backward_two(u64 pawns) {
-    if constexpr (side) return pawns << 16;
-    else return pawns >> 16;
-}
-
-template <bool side> u64 Position::pawns_forward_left(u64 pawns) {
-    if constexpr (side) return (pawns & ~0x0101010101010101) >> 9;
-    else return (pawns & ~0x0101010101010101) << 7;
-}
-
-template <bool side> u64 Position::pawns_backward_left(u64 pawns) {
-    if constexpr (side) return (pawns & ~0x0101010101010101) << 7;
-    else return (pawns & ~0x0101010101010101) >> 9;
-}
-
-template <bool side> u64 Position::pawns_forward_right(u64 pawns) {
-    if constexpr (side) return (pawns & ~0x8080808080808080) >> 7;
-    else return (pawns & ~0x8080808080808080) << 9;
-}
-
-template <bool side> u64 Position::pawns_backward_right(u64 pawns) {
-    if constexpr (side) return (pawns & ~0x8080808080808080) << 9;
-    else return (pawns & ~0x8080808080808080) >> 7;
-}
-
 template <bool side> u64 Position::promotion_rank() {
     if constexpr (side) return 0x000000000000FF00;
     else return 0x00FF000000000000;
-}
-
-template <bool side> u64 Position::second_rank() {
-    if constexpr (side) return 0x00FF000000000000;
-    else return 0x000000000000FF00;
 }
 
 u64 Position::attacks_to(int square, u64 occ, bool side) {

@@ -73,16 +73,7 @@ public:
     int nnue_refresh;
 
     Position();
-    template <bool side> u64 pawns_forward_one(u64 pawns);
-    template <bool side> u64 pawns_backward_one(u64 pawns);
-    template <bool side> u64 pawns_forward_two(u64 pawns);
-    template <bool side> u64 pawns_backward_two(u64 pawns);
-    template <bool side> u64 pawns_forward_left(u64 pawns);
-    template <bool side> u64 pawns_backward_left(u64 pawns);
-    template <bool side> u64 pawns_forward_right(u64 pawns);
-    template <bool side> u64 pawns_backward_right(u64 pawns);
     template <bool side> u64 promotion_rank();
-    template <bool side> u64 second_rank();
     u64 attacks_to(int square, u64 occ, bool side);
     u64 checkers(u64 occ);
     template <Move_types types, bool side> void generate_stage(Movelist& movelist);
