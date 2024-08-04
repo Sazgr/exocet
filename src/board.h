@@ -99,4 +99,6 @@ public:
     bool parse_move(Move& out, std::string move);
 };
 
+std::ostream& operator<<(std::ostream& out, Position& position);
+
 #endif

@@ -600,3 +600,14 @@ bool Position::parse_move(Move& out, std::string move) {
     out = Move{piece, start, captured, end, flag};
     return true;
 }
+
+std::ostream& operator<<(std::ostream& out, Position& position) {
+    static std::vector<std::string> pieces{"p", "P", "n", "N", "b", "B", "r", "R", "q", "Q", "k", "K", ".", "."};
+    out << "8 ";
+    for (int square{0}; square < 64; ++square) {
+        out << pieces[position.board[square]] << ' ';
+        if ((square & 7) == 7) out << '\n' << (7 - (square >> 3)) << ' ';
+    }
+    out << "a b c d e f g h\n";
+    return out;
+}
