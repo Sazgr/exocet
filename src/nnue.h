@@ -4,7 +4,9 @@
 #include "simd.h"
 #include "types.h"
 #include <array>
+#include <algorithm>
 #include <cstring>
+#include <string>
 
 constexpr int buckets = 1;
 constexpr int input_size = 12 * 64 * buckets;

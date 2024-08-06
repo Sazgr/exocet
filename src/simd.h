@@ -1,6 +1,8 @@
 #ifndef EXOCET_SIMD
 #define EXOCET_SIMD
 
+#include "types.h"
+
 #if defined(__AVX__) || defined(__AVX2__) || (defined(__AVX512F__) && defined(__AVX512BW__) && defined(__AVX512DQ__))
 #include <immintrin.h>
 #define SIMD
@@ -40,7 +42,7 @@ using register_type = __m256i;
 #endif
 
 #ifdef SIMD
-inline int32_t register_sum_32(register_type& reg) {
+inline i32 register_sum_32(register_type& reg) {
 #if defined(__AVX512F__) && defined(__AVX512BW__) && defined(__AVX512DQ__)
     const __m256i reduced_8 = _mm256_add_epi32(_mm512_castsi512_si256(reg), _mm512_extracti32x8_epi32(reg, 1));
 #elif defined(__AVX2__) || defined(__AVX__)
@@ -49,7 +51,7 @@ inline int32_t register_sum_32(register_type& reg) {
     const __m128i reduced_4 = _mm_add_epi32(_mm256_castsi256_si128(reduced_8), _mm256_extractf128_si256(reduced_8, 1));
     __m128i vsum = _mm_add_epi32(reduced_4, _mm_srli_si128(reduced_4, 8));
     vsum = _mm_add_epi32(vsum, _mm_srli_si128(vsum, 4));
-    int32_t sums = _mm_cvtsi128_si32(vsum);
+    i32 sums = _mm_cvtsi128_si32(vsum);
     return sums;
 }
 #endif
