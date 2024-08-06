@@ -26,6 +26,9 @@ int main() {
         if (tokens[0] == "perftsplit") {
             uci.handle_perftsplit(tokens);
         }
+        if (tokens[0] == "position") {
+            uci.handle_position(tokens);
+        }
         if (tokens[0] == "quit") {
             uci.handle_quit();
             return 0;

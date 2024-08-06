@@ -33,6 +33,20 @@ void Uci::handle_perftsplit(std::vector<std::string> tokens) {
     }
 }
 
+void Uci::handle_position(std::vector<std::string> tokens) {
+    Move move;
+    if (tokens.size() == 1) return;
+    if (tokens[1] == "startpos") position.load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0", "1");
+    else if (tokens[1] == "kiwipete") position.load_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R", "w", "KQkq", "-", "0", "1");
+    else if (tokens[1] == "fen") position.load_fen(tokens[2], tokens[3], tokens[4], tokens[5], tokens[6], tokens[7]);
+    if (std::find(tokens.begin(), tokens.end(), "moves") != tokens.end()) {
+        for (auto iter = ++std::find(tokens.begin(), tokens.end(), "moves"); iter != tokens.end(); ++iter) {
+            position.parse_move(move, *iter);
+            position.make_move(move);
+        }
+    }
+}
+
 void Uci::handle_quit() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }

@@ -80,8 +80,8 @@ public:
     template <bool update_nnue, bool update_hash> void remove_piece(int sq, NNUE* nnue = nullptr);
     template <bool update_nnue, bool update_hash> void add_piece(int sq, int piece, NNUE* nnue = nullptr);
     template <bool update_nnue, bool update_hash> void remove_add_piece(int sq, int piece, NNUE* nnue = nullptr);
-    template <bool update_nnue> void make_move(Move move, NNUE* nnue = nullptr);
-    template <bool update_nnue> void undo_move(Move move, NNUE* nnue = nullptr);
+    template <bool update_nnue = false> void make_move(Move move, NNUE* nnue = nullptr);
+    template <bool update_nnue = false> void undo_move(Move move, NNUE* nnue = nullptr);
     bool is_legal(Move move);
     void nnue_update_accumulator(NNUE& nnue);
     int static_eval(NNUE& nnue);
