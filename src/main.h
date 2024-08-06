@@ -1,4 +1,4 @@
-#ifndef PEACEKEEPER_MAIN
-#define PEACEKEEPER_MAIN
+#ifndef EXOCET_MAIN
+#define EXOCETs_MAIN
 
 #endif

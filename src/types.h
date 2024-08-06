@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_TYPES
-#define PEACEKEEPER_TYPES
+#ifndef EXOCET_TYPES
+#define EXOCET_TYPES
 
 #include <cstdint>
 

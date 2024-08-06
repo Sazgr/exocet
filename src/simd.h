@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_SIMD
-#define PEACEKEEPER_SIMD
+#ifndef EXOCET_SIMD
+#define EXOCET_SIMD
 
 #if defined(__AVX__) || defined(__AVX2__) || (defined(__AVX512F__) && defined(__AVX512BW__) && defined(__AVX512DQ__))
 #include <immintrin.h>

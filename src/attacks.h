@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_ATTACKS
-#define PEACEKEEPER_ATTACKS
+#ifndef EXOCET_ATTACKS
+#define EXOCET_ATTACKS
 
 #include "types.h"
 

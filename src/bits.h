@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_BITS
-#define PEACEKEEPER_BITS
+#ifndef EXOCET_BITS
+#define EXOCET_BITS
 
 #include "types.h"
 

@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_BOARD
-#define PEACEKEEPER_BOARD
+#ifndef EXOCET_BOARD
+#define EXOCET_BOARD
 
 #include "fixed_vector.h"
 #include "magics.h"

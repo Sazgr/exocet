@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_LOOKUP
-#define PEACEKEEPER_LOOKUP
+#ifndef EXOCET_LOOKUP
+#define EXOCET_LOOKUP
 
 #include "types.h"
 #include <array>

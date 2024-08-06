@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_TIMER
-#define PEACEKEEPER_TIMER
+#ifndef EXOCET_TIMER
+#define EXOCET_TIMER
 
 #include "types.h"
 #include <chrono>

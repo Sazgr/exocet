@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_MAGICS
-#define PEACEKEEPER_MAGICS
+#ifndef EXOCET_MAGICS
+#define EXOCET_MAGICS
 
 #include "types.h"
 

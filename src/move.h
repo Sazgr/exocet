@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_MOVE
-#define PEACEKEEPER_MOVE
+#ifndef EXOCET_MOVE
+#define EXOCET_MOVE
 
 #include "types.h"
 #include <iostream>

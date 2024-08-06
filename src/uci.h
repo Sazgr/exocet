@@ -1,4 +1,4 @@
-#ifndef PEACEKEEPER_UCI
+#ifndef EXOCET_UCI
 #define PEACEKEEPER_UCI
 
 void handle_uci();

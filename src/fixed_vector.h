@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_FIXED_VECTOR
-#define PEACEKEEPER_FIXED_VECTOR
+#ifndef EXOCET_FIXED_VECTOR
+#define EXOCET_FIXED_VECTOR
 
 #include "move.h"
 #include <algorithm>

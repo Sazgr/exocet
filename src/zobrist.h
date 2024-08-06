@@ -1,3 +1,6 @@
+#ifndef EXOCET_ZOBRIST
+#define EXOCET_ZOBRIST
+
 #include "types.h"
 
 const u64 zobrist_pieces[13][64] = {{
@@ -144,3 +147,5 @@ const u64 zobrist_castling[65] = {
     0x7f567f6f1047269f, 0x55b0c115da0a13ec, 0x3a5a11973ce493b5, 0x4b24b43dc5523a4a, 0x446c0ed1f1018dbb, 0xd3181302307a82d8, 0x790b5cae0317b631, 0xdd72e4a1e581b116,
     0,
 };
+
+#endif

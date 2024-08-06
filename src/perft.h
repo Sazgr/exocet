@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_PERFT
-#define PEACEKEEPER_PERFT
+#ifndef EXOCET_PERFT
+#define EXOCET_PERFT
 
 #include "board.h"
 #include "move.h"

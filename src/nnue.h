@@ -1,5 +1,5 @@
-#ifndef PEACEKEEPER_NNUE
-#define PEACEKEEPER_NNUE
+#ifndef EXOCET_NNUE
+#define EXOCET_NNUE
 
 #include "simd.h"
 #include "types.h"
