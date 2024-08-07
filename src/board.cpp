@@ -29,7 +29,20 @@ u64 Position::checkers(u64 occ) {
     return attacks_to(square, occ, !side_to_move);
 }
 
-template <Move_types types, bool side> void Position::generate_stage(Movelist& movelist) {
+bool Position::check() {
+    return checkers(occupied);
+}
+
+bool Position::draw(int num_reps) {
+    if (halfmove_clock[ply] < 8) return false;
+    if (halfmove_clock[ply] >= 100) return true;
+    u64 curr_hash = hash[ply];
+    int repeats{};
+    for (int i{ply - 4}; i >= ply - halfmove_clock[ply] && repeats < num_reps; i -= 2) repeats += (hash[i] == curr_hash);
+    return (repeats >= num_reps);
+}
+
+template <Move_types types, bool side> void Position::generate_stage_side(Movelist& movelist) {
     assert(popcount(pieces[black_king]) == 1);
     assert(popcount(pieces[white_king]) == 1);
     constexpr bool gen_quiet = types & 1;
@@ -239,8 +252,14 @@ template <Move_types types, bool side> void Position::generate_stage(Movelist& m
     }
 }
 
-template void Position::generate_stage<all, false>(Movelist& movelist);
-template void Position::generate_stage<all, true>(Movelist& movelist);
+template <Move_types types> void Position::generate_stage(Movelist& movelist) {
+    if (side_to_move) generate_stage_side<types, true>(movelist);
+    else generate_stage_side<types, false>(movelist);
+}
+
+template void Position::generate_stage<quiet>(Movelist& movelist);
+template void Position::generate_stage<noisy>(Movelist& movelist);
+template void Position::generate_stage<all>(Movelist& movelist);
 
 template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq, NNUE* nnue) {
     if constexpr (update_hash) {

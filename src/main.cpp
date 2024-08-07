@@ -17,6 +17,9 @@ int main() {
         std::istringstream parser(command);
         while (parser >> token) {tokens.push_back(token);}
         if (tokens.size() == 0) {continue;}
+        if (tokens[0] == "go") {
+            uci.handle_go(tokens);
+        }
         if (tokens[0] == "isready") {
             uci.handle_isready();
         }
@@ -32,6 +35,9 @@ int main() {
         if (tokens[0] == "quit") {
             uci.handle_quit();
             return 0;
+        }
+        if (tokens[0] == "stop") {
+            uci.handle_stop();
         }
         if (tokens[0] == "uci") {
             uci.handle_uci();

@@ -1,10 +1,54 @@
 #include "perft.h"
+#include "search.h"
 #include "uci.h"
 #include <chrono>
 #include <iostream>
 #include <thread>
 
 #define VERSION "0.0.0-dev"
+
+void Uci::handle_go(std::vector<std::string> tokens) {
+    if (std::find(tokens.begin(), tokens.end(), "infinite") != tokens.end()) {
+        timer.reset();
+        std::thread search_thread{search_root, std::ref(position), std::ref(timer)};
+        search_thread.detach();
+        return;
+    }
+    int movetime = 0;
+    int depth = 0;
+    int nodes = 0;
+    bool calculate = false;
+    int wtime = 0;
+    int btime = 0;
+    int winc = 0;
+    int binc = 0;
+    int movestogo = 0;
+    if (std::find(tokens.begin(), tokens.end(), "movetime") != tokens.end()) {movetime = stoi(*(++std::find(tokens.begin(), tokens.end(), "movetime")));}
+    if (std::find(tokens.begin(), tokens.end(), "depth") != tokens.end()) {depth = stoi(*(++std::find(tokens.begin(), tokens.end(), "depth")));}
+    if (std::find(tokens.begin(), tokens.end(), "nodes") != tokens.end()) {nodes = stoi(*(++std::find(tokens.begin(), tokens.end(), "nodes")));}
+    if (std::find(tokens.begin(), tokens.end(), "wtime") != tokens.end()) {
+        calculate = true;
+        wtime = stoi(*(++std::find(tokens.begin(), tokens.end(), "wtime")));
+    }
+    if (std::find(tokens.begin(), tokens.end(), "btime") != tokens.end()) {
+        calculate = true;
+        btime = stoi(*(++std::find(tokens.begin(), tokens.end(), "btime")));
+    }
+    if (std::find(tokens.begin(), tokens.end(), "winc") != tokens.end()) {winc = stoi(*(++std::find(tokens.begin(), tokens.end(), "winc")));}
+    if (std::find(tokens.begin(), tokens.end(), "binc") != tokens.end()) {binc = stoi(*(++std::find(tokens.begin(), tokens.end(), "binc")));}
+    if (std::find(tokens.begin(), tokens.end(), "movestogo") != tokens.end()) {movestogo = stoi(*(++std::find(tokens.begin(), tokens.end(), "movestogo"))) + 1;}
+    int mytime;
+    if (movetime == 0 && calculate == true) {
+        mytime = position.side_to_move ? wtime : btime;
+        int myinc{position.side_to_move ? winc : binc};
+        if (movestogo == 0) {movestogo = 20;}
+        movetime = (mytime / movestogo + myinc * 3 / 4);
+        movetime = std::max(1, movetime);
+    }
+    timer.reset(calculate ? std::max(1, std::min(mytime * 3 / 4, 4 * movetime)) : movetime, calculate ? movetime : 0, nodes, 0, depth);
+    std::thread search_thread{search_root, std::ref(position), std::ref(timer)};
+    search_thread.detach();
+}
 
 void Uci::handle_isready() {
     std::cout << "readyok\n";
@@ -48,6 +92,12 @@ void Uci::handle_position(std::vector<std::string> tokens) {
 }
 
 void Uci::handle_quit() {
+    timer.stop = true;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void Uci::handle_stop() {
+    timer.stop = true;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -56,4 +106,22 @@ void Uci::handle_uci() {
     std::cout << "id author Kyle Zhang\n";
     std::cout << "uciok\n";
     std::cout << std::flush;
+}
+
+void print_score(int score) {
+    if (abs(score) <= 18000) std::cout << "cp " << score / 2;
+    else if (score < 0) std::cout << "mate -" << (20001 + score) / 2;
+    else std::cout << "mate " << (20001 - score) / 2;
+}
+
+void print_pv(Move pv[]) {
+    for (int i{}; !pv[i].is_null(); ++i) std::cout << ' ' << pv[i];
+}
+
+void print_info(int score, int depth, u64 nodes, int nps, int time, Move pv[]) {
+    std::cout << "info score ";
+    print_score(score);
+    std::cout << " depth " << depth << " nodes " << nodes << " nps " << nps << " time " << time << " pv";
+    print_pv(pv);
+    std::cout << std::endl;
 }

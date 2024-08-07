@@ -76,7 +76,10 @@ public:
     template <bool side> u64 promotion_rank();
     u64 attacks_to(int square, u64 occ, bool side);
     u64 checkers(u64 occ);
-    template <Move_types types, bool side> void generate_stage(Movelist& movelist);
+    bool check();
+    bool draw(int num_reps = 2);
+    template <Move_types types, bool side> void generate_stage_side(Movelist& movelist);
+    template <Move_types types> void generate_stage(Movelist& movelist);
     template <bool update_nnue, bool update_hash> void remove_piece(int sq, NNUE* nnue = nullptr);
     template <bool update_nnue, bool update_hash> void add_piece(int sq, int piece, NNUE* nnue = nullptr);
     template <bool update_nnue, bool update_hash> void remove_add_piece(int sq, int piece, NNUE* nnue = nullptr);
