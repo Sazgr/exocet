@@ -54,10 +54,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     return (*sd.timer).stopped() ? 0 : best_score;
 }
 
-void search_root(Position& position, Limit_timer& timer) {
+void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool output) {
     Search_stack ss[96];
     ss[4].ply = 0;
-    Search_data sd;
     NNUE nnue;
     nnue.refresh(position);
     sd.nnue = &nnue;
@@ -67,10 +66,13 @@ void search_root(Position& position, Limit_timer& timer) {
     int alpha = -20001;
     int beta = 20001;
     for (int depth = 1; depth < 64; ++depth) {
+        if (timer.check(sd.nodes, depth)) break;
         score = search(position, &ss[4], sd, depth, alpha, beta);
         if (timer.stopped()) break;
         best_move = sd.pv_table[0][0];
-        print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
+        if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
     }
-    std::cout << "bestmove " << best_move << std::endl;
+    if (output) std::cout << "bestmove " << best_move << std::endl;
+    sd.nnue = nullptr;
+    sd.timer = nullptr;
 }

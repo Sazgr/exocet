@@ -19,6 +19,6 @@ struct Search_data {
 };
 
 int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int alpha, int beta);
-void search_root(Position& position, Limit_timer& timer);
+void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool output);
 
 #endif

@@ -11,6 +11,7 @@ class Uci {
     Limit_timer timer;
 
 public:
+    void handle_bench();
     void handle_go(std::vector<std::string> tokens);
     void handle_isready();
     void handle_perft(std::vector<std::string> tokens);
