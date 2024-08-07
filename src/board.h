@@ -70,7 +70,7 @@ public:
 
     std::vector<std::array<int, 2>> nnue_sub;
     std::vector<std::array<int, 2>> nnue_add;
-    int nnue_refresh;
+    int nnue_refresh = 0;
 
     Position();
     template <bool side> u64 promotion_rank();

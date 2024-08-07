@@ -6,9 +6,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool is_pv = (beta - alpha) != 1;
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     if (depth <= 0) {
-        (*sd.nnue).refresh(position);
-        return (*sd.nnue).evaluate(position.side_to_move);
-        //return position.static_eval(*sd.nnue);
+        return position.static_eval(*sd.nnue);
     }
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
     if (position.draw(ss->ply > 2 ? 1 : 2)) {
