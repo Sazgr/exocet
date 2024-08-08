@@ -66,7 +66,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     int alpha = -20001;
     int beta = 20001;
     for (int depth = 1; depth < 64; ++depth) {
-        if (timer.check(sd.nodes, depth)) break;
+        if (depth > 1 && timer.check(sd.nodes, depth)) break;
         score = search(position, &ss[4], sd, depth, alpha, beta);
         if (timer.stopped()) break;
         best_move = sd.pv_table[0][0];
