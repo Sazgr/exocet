@@ -1,12 +1,59 @@
 #include "search.h"
 #include "uci.h"
 
+int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
+    if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
+    bool in_check = position.check();
+    int static_eval = position.static_eval(*sd.nnue);
+    int score = -20001;
+    int best_score = -20001;
+    if (!in_check) { //stand pat
+        if (static_eval >= beta) return static_eval;
+        if (static_eval > best_score) best_score = static_eval;
+        if (static_eval > alpha) alpha = static_eval;
+    }
+    int legal_moves = 0;
+    Move best_move{};
+    Movelist movelist;
+    if (in_check) {
+        position.generate_stage<all>(movelist);
+    } else {
+        position.generate_stage<noisy>(movelist);
+    }
+    for (int i{}; i < movelist.size(); ++i) {
+        if (!position.is_legal(movelist[i])) continue;
+        position.make_move<true>(movelist[i], sd.nnue);
+        ss->move = movelist[i];
+        bool gives_check = position.check();
+        ++sd.nodes;
+        ++legal_moves;
+        (ss + 1)->ply = ss->ply + 1;
+        score = -qsearch(position, ss + 1, sd, -beta, -alpha);
+        position.undo_move<true>(movelist[i], sd.nnue);
+        if ((*sd.timer).stopped()) return 0;
+        if (score > best_score) {
+            best_score = score;
+             if (score > alpha) {
+                alpha = score;
+                best_move = movelist[i];
+                if (score > beta) {
+                    return score;
+                }
+            }
+        }
+    }
+    if (in_check && legal_moves == 0) {
+        return -20000 + ss->ply;
+    }
+    return (*sd.timer).stopped() ? 0 : best_score;
+}
+
 int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int alpha, int beta) {
     bool is_root = (ss->ply == 0);
     bool is_pv = (beta - alpha) != 1;
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     if (depth <= 0) {
-        return position.static_eval(*sd.nnue);
+        return qsearch(position, ss, sd, alpha, beta);
     }
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
     if (position.draw(ss->ply > 2 ? 1 : 2)) {
