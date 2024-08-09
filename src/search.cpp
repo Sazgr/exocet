@@ -57,13 +57,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         return position.static_eval(*sd.nnue);//qsearch(position, ss, sd, alpha, beta);
     }
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
-    if (position.draw(ss->ply > 2 ? 1 : 2)) {
-        sd.pv_table[ss->ply][0] = Move{};
-        return 0;
-    }
+    //if (position.draw(ss->ply > 2 ? 1 : 2)) {
+    //    sd.pv_table[ss->ply][0] = Move{};
+    //    return 0;
+    //}
     bool in_check = position.check();
-    int score = -20001;
-    int best_score = -20001;
+    int score = -20000;
+    int best_score = -20000;
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
