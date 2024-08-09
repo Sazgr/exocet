@@ -38,7 +38,7 @@ bool Position::draw(int num_reps) {
     if (halfmove_clock[ply] >= 100) return true;
     u64 curr_hash = hash[ply];
     int repeats{};
-    for (int i{ply - 4}; i >= ply - halfmove_clock[ply] && repeats < num_reps; i -= 2) repeats += (hash[i] == curr_hash);
+    for (int i{ply - 4}; i >= 0 && i >= ply - halfmove_clock[ply] && repeats < num_reps; i -= 2) repeats += (hash[i] == curr_hash);
     return (repeats >= num_reps);
 }
 
