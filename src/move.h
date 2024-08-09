@@ -34,10 +34,10 @@ enum Flags {
 
 struct Move {
     Move() {
-        data = (12 << 20) ^ (0 << 14) ^ (12 << 10) ^ (64 << 3) ^ none;
+        data = (12 << 20) ^ (12 << 16) ^ (0 << 10) ^ (64 << 3) ^ none;
     }
     Move(int piece, int start_square, int captured_piece, int end_square, int flag = none) {
-        data = (piece << 20) ^ (start_square << 14) ^ (captured_piece << 10) ^ (end_square << 3) ^ flag;
+        data = (piece << 20) ^ (captured_piece << 16) ^ (start_square << 10) ^ (end_square << 3) ^ flag;
     }
     Move(const Move& rhs) {
         data = rhs.data;
@@ -47,8 +47,8 @@ struct Move {
     }
     inline constexpr int flag() const {return data & 0x7;}
     inline constexpr int piece() const {return (data >> 20) & 0xF;}
-    inline constexpr int start() const {return (data >> 14) & 0x3F;}
-    inline constexpr int captured() const {return (data >> 10) & 0xF;}
+    inline constexpr int start() const {return (data >> 10) & 0x3F;}
+    inline constexpr int captured() const {return (data >> 16) & 0xF;}
     inline constexpr int end() const {return (data >> 3) & 0x7F;}
     inline constexpr bool is_null() const {return (data & 0x200);}
     inline void add_sortkey(int key) {data = (data & 0xFFFFFFFF) | (static_cast<u64>(key) << 32);}
