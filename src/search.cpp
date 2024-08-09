@@ -53,6 +53,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool is_pv = (beta - alpha) != 1;
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     if (depth <= 0) {
+        (*sd.nnue).refresh(position);
         return position.static_eval(*sd.nnue);//qsearch(position, ss, sd, alpha, beta);
     }
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
@@ -87,9 +88,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     sd.pv_table[ss->ply][0] = best_move;
                     memcpy(&sd.pv_table[ss->ply][1], &sd.pv_table[ss->ply + 1][0], sizeof(Move) * 127);
                 }
-                //if (score > beta) {
-                //    return score;
-                //}
+                if (score > beta) {
+                    return score;
+                }
             }
         }
     }
