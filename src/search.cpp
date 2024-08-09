@@ -87,9 +87,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     sd.pv_table[ss->ply][0] = best_move;
                     memcpy(&sd.pv_table[ss->ply][1], &sd.pv_table[ss->ply + 1][0], sizeof(Move) * 127);
                 }
-                if (score > beta) {
-                    return score;
-                }
+                //if (score > beta) {
+                //    return score;
+                //}
             }
         }
     }
