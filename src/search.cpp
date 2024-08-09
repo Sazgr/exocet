@@ -68,6 +68,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Move best_move{};
     Movelist movelist;
     position.generate_stage<all>(movelist);
+    movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
         position.make_move<true>(movelist[i], sd.nnue);
