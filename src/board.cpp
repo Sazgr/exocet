@@ -64,7 +64,6 @@ template <Move_types types, bool side> void Position::generate_stage_side(Moveli
 
     u64 promote_mask{promotion_rank<side>()};
     int ep_square = enpassant_square[ply];
-    u64 ep_bb = 1ull << ep_square;
 
     u64 hv_pinmask{(xray_rook_attacks(occupied, own_pieces, king_location) & (pieces[black_rook + !side] | pieces[black_queen + !side]))};
     u64 dd_pinmask{(xray_bishop_attacks(occupied, own_pieces, king_location) & (pieces[black_bishop + !side] | pieces[black_queen + !side]))};
@@ -261,7 +260,7 @@ template void Position::generate_stage<quiet>(Movelist& movelist);
 template void Position::generate_stage<noisy>(Movelist& movelist);
 template void Position::generate_stage<all>(Movelist& movelist);
 
-template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq, NNUE* nnue) {
+template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq];
     }
@@ -273,7 +272,7 @@ template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq
     board[sq] = 12;
 }
 
-template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, int piece, NNUE* nnue) {
+template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, int piece) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[piece][sq];
     }
@@ -285,7 +284,7 @@ template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, i
     board[sq] = piece;
 }
 
-template <bool update_nnue, bool update_hash> void Position::remove_add_piece(int sq, int piece, NNUE* nnue) {
+template <bool update_nnue, bool update_hash> void Position::remove_add_piece(int sq, int piece) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq] ^ zobrist_pieces[piece][sq];
     }
@@ -311,43 +310,43 @@ template <bool update_nnue> void Position::make_move(Move move, NNUE* nnue) {
     int king_end = end;
     switch (move.flag()) {
         case none:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_add_piece<update_nnue, true>(end, piece, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_add_piece<update_nnue, true>(end, piece);
             break;
         case knight_pr:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_add_piece<update_nnue, true>(end, piece + 2, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_add_piece<update_nnue, true>(end, piece + 2);
             break;
         case bishop_pr:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_add_piece<update_nnue, true>(end, piece + 4, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_add_piece<update_nnue, true>(end, piece + 4);
             break;
         case rook_pr:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_add_piece<update_nnue, true>(end, piece + 6, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_add_piece<update_nnue, true>(end, piece + 6);
             break;
         case queen_pr:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_add_piece<update_nnue, true>(end, piece + 8, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_add_piece<update_nnue, true>(end, piece + 8);
             break;
         case k_castling:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_piece<update_nnue, true>(end, nnue);
-            add_piece<update_nnue, true>((start & 56) + 6, piece, nnue);
-            add_piece<update_nnue, true>((start & 56) + 5, piece - 4, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_piece<update_nnue, true>(end);
+            add_piece<update_nnue, true>((start & 56) + 6, piece);
+            add_piece<update_nnue, true>((start & 56) + 5, piece - 4);
             king_end = (start & 56) + 6;
             break;
         case q_castling:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_piece<update_nnue, true>(end, nnue);
-            add_piece<update_nnue, true>((start & 56) + 2, piece, nnue);
-            add_piece<update_nnue, true>((start & 56) + 3, piece - 4, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_piece<update_nnue, true>(end);
+            add_piece<update_nnue, true>((start & 56) + 2, piece);
+            add_piece<update_nnue, true>((start & 56) + 3, piece - 4);
             king_end = (start & 56) + 2;
             break;
         case enpassant:
-            remove_piece<update_nnue, true>(start, nnue);
-            remove_piece<update_nnue, true>(end ^ 8, nnue);//ep square
-            add_piece<update_nnue, true>(end, piece, nnue);
+            remove_piece<update_nnue, true>(start);
+            remove_piece<update_nnue, true>(end ^ 8);//ep square
+            add_piece<update_nnue, true>(end, piece);
             break;
     }
     enpassant_square[ply] = (!(piece & ~1) && end == (start ^ 16)) ? (end ^ 8) : 64;
@@ -390,32 +389,32 @@ template <bool update_nnue> void Position::undo_move(Move move, NNUE* nnue) {
     int captured = move.captured();
     switch (move.flag()) {
         case none:
-            add_piece<update_nnue, false>(start, piece, nnue);
-            remove_add_piece<update_nnue, false>(end, captured, nnue);
+            add_piece<update_nnue, false>(start, piece);
+            remove_add_piece<update_nnue, false>(end, captured);
             break;
         case knight_pr:
         case bishop_pr:
         case rook_pr:
         case queen_pr:
-            add_piece<update_nnue, false>(start, piece, nnue);
-            remove_add_piece<update_nnue, false>(end, captured, nnue);
+            add_piece<update_nnue, false>(start, piece);
+            remove_add_piece<update_nnue, false>(end, captured);
             break;
         case k_castling:
-            remove_piece<update_nnue, false>((start & 56) + 6, nnue);
-            remove_piece<update_nnue, false>((start & 56) + 5, nnue);
-            add_piece<update_nnue, false>(start, piece, nnue);
-            add_piece<update_nnue, false>(end, piece - 4, nnue);
+            remove_piece<update_nnue, false>((start & 56) + 6);
+            remove_piece<update_nnue, false>((start & 56) + 5);
+            add_piece<update_nnue, false>(start, piece);
+            add_piece<update_nnue, false>(end, piece - 4);
             break;
         case q_castling:
-            remove_piece<update_nnue, false>((start & 56) + 2, nnue);
-            remove_piece<update_nnue, false>((start & 56) + 3, nnue);
-            add_piece<update_nnue, false>(start, piece, nnue);
-            add_piece<update_nnue, false>(end, piece - 4, nnue);
+            remove_piece<update_nnue, false>((start & 56) + 2);
+            remove_piece<update_nnue, false>((start & 56) + 3);
+            add_piece<update_nnue, false>(start, piece);
+            add_piece<update_nnue, false>(end, piece - 4);
             break;
         case enpassant:
-            add_piece<update_nnue, false>(start, piece, nnue);
-            remove_piece<update_nnue, false>(end, nnue);
-            add_piece<update_nnue, false>(end ^ 8, piece ^ 1, nnue);
+            add_piece<update_nnue, false>(start, piece);
+            remove_piece<update_nnue, false>(end);
+            add_piece<update_nnue, false>(end ^ 8, piece ^ 1);
             break;
     }
     king_square[0] = get_lsb(pieces[10]);

@@ -64,7 +64,7 @@ public:
     bool side_to_move{true};
     int ply{};
     int enpassant_square[1024]{64};
-    int castling_rights[1024][4]{0, 7, 56, 63};
+    int castling_rights[1024][4]{{0, 7, 56, 63}};
     int halfmove_clock[1024]{0};
     u64 hash[1024]{};
 
@@ -80,9 +80,9 @@ public:
     bool draw(int num_reps = 2);
     template <Move_types types, bool side> void generate_stage_side(Movelist& movelist);
     template <Move_types types> void generate_stage(Movelist& movelist);
-    template <bool update_nnue, bool update_hash> void remove_piece(int sq, NNUE* nnue = nullptr);
-    template <bool update_nnue, bool update_hash> void add_piece(int sq, int piece, NNUE* nnue = nullptr);
-    template <bool update_nnue, bool update_hash> void remove_add_piece(int sq, int piece, NNUE* nnue = nullptr);
+    template <bool update_nnue, bool update_hash> void remove_piece(int sq);
+    template <bool update_nnue, bool update_hash> void add_piece(int sq, int piece);
+    template <bool update_nnue, bool update_hash> void remove_add_piece(int sq, int piece);
     template <bool update_nnue = false> void make_move(Move move, NNUE* nnue = nullptr);
     template <bool update_nnue = false> void undo_move(Move move, NNUE* nnue = nullptr);
     bool is_legal(Move move);

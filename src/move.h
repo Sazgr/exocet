@@ -42,6 +42,11 @@ struct Move {
     Move(const Move& rhs) {
         data = rhs.data;
     }
+    Move& operator=(const Move& rhs) {
+        if (this == &rhs) return *this;
+        data = rhs.data;
+        return *this;
+    }
     Move (const u64 move_data) {
         data = move_data;
     }
