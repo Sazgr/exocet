@@ -53,7 +53,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool is_pv = (beta - alpha) != 1;
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     if (depth <= 0) {
-        return qsearch(position, ss, sd, alpha, beta);
+        return position.static_eval(*sd.nnue);//qsearch(position, ss, sd, alpha, beta);
     }
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
     if (position.draw(ss->ply > 2 ? 1 : 2)) {
