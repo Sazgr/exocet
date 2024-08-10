@@ -4,6 +4,7 @@
 int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     bool in_check = position.check();
+    (*sd.nnue).refresh(position);
     int static_eval = position.static_eval(*sd.nnue);
     int score = -20001;
     int best_score = -20001;
