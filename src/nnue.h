@@ -8,9 +8,9 @@
 #include <cstring>
 #include <string>
 
-constexpr int buckets = 1;
+constexpr int buckets = 8;
 constexpr int input_size = 12 * 64 * buckets;
-constexpr int hidden_size = 64;
+constexpr int hidden_size = 256;
 constexpr int hidden_dsize = hidden_size * 2;
 constexpr int output_size = 1;
 constexpr int input_quantization = 181;

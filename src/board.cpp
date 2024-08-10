@@ -465,12 +465,6 @@ void Position::nnue_update_accumulator(NNUE& nnue) {
 }
 
 int Position::static_eval(NNUE& nnue) {
-    return 100 * (popcount(pieces[side_to_move]) - popcount(pieces[!side_to_move]))
-    + 300 * (popcount(pieces[2 + side_to_move]) - popcount(pieces[2 + !side_to_move]))
-    + 300 * (popcount(pieces[4 + side_to_move]) - popcount(pieces[4 + !side_to_move]))
-    + 500 * (popcount(pieces[6 + side_to_move]) - popcount(pieces[6 + !side_to_move]))
-    + 900 * (popcount(pieces[8 + side_to_move]) - popcount(pieces[8 + !side_to_move]));
-
     nnue_update_accumulator(nnue);
     return nnue.evaluate(side_to_move);
 }
