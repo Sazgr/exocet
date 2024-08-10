@@ -68,6 +68,11 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Movelist movelist;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
+        if (movelist[i].captured() != 12) movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+        else movelist[i].add_sortkey(0);
+    }
+    movelist.sort(0, movelist.size());
+    for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
