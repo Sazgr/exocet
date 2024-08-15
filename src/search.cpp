@@ -114,13 +114,18 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     sd.nnue = &nnue;
     sd.timer = &timer;
     int score;
-    Movelist movelist;
-    position.generate_stage<all>(movelist);
-    Move best_move = movelist[0];
+    Move best_move = Move{};
     int alpha = -20001;
     int beta = 20001;
+    Movelist movelist;
+    position.generate_stage<all>(movelist);
+    for (int i{}; i < movelist.size(); ++i) {
+        if (!position.is_legal(movelist[i])) continue;
+        best_move = movelist[i];
+        break;
+    }
     for (int depth = 1; depth < 64; ++depth) {
-        if (depth > 1 && timer.check(sd.nodes, depth)) break;
+        if (timer.check(sd.nodes, depth)) break;
         score = search(position, &ss[4], sd, depth, alpha, beta);
         if (timer.stopped()) break;
         best_move = sd.pv_table[0][0];
