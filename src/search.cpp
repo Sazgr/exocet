@@ -114,7 +114,9 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     sd.nnue = &nnue;
     sd.timer = &timer;
     int score;
-    Move best_move;
+    Movelist movelist;
+    position.generate_stage<all>(movelist);
+    Move best_move = movelist[0];
     int alpha = -20001;
     int beta = 20001;
     for (int depth = 1; depth < 64; ++depth) {
