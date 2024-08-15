@@ -7,10 +7,10 @@
 #include <vector>
 
 class Uci {
+public:
     Position position;
     Limit_timer timer;
 
-public:
     void handle_bench();
     void handle_go(std::vector<std::string> tokens);
     void handle_isready();

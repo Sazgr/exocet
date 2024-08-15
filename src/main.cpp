@@ -24,6 +24,12 @@ int main(int argc, char *argv[]) {
         std::istringstream parser(command);
         while (parser >> token) {tokens.push_back(token);}
         if (tokens.size() == 0) {continue;}
+        if (tokens[0] == "eval") {
+            std::cout << uci.position << '\n';
+            NNUE nnue;
+            nnue.refresh(uci.position);
+            std::cout << "NNUE: " << nnue.evaluate(uci.position.side_to_move) << std::endl;
+        }
         if (tokens[0] == "go") {
             uci.handle_go(tokens);
         }
