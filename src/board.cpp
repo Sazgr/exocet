@@ -481,6 +481,10 @@ void Position::recalculate_zobrist() {
     hash[ply] ^= zobrist_enpassant[enpassant_square[ply]];
 }
 
+u64 Position::hashkey() {
+    return hash[ply];
+}
+
 bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fen_castling, std::string fen_ep, std::string fen_hmove_clock, std::string fen_fmove_counter) {
     int sq = 0;
     ply = 0;

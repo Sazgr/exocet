@@ -36,6 +36,7 @@ void Uci::handle_bench() {
     std::string token;
     std::vector<std::string> tokens;
     Search_data sd;
+    sd.hash_table = &hash_table;
     for (std::string fen : fens) {
         tokens.clear();
         std::istringstream parser(fen);
@@ -51,6 +52,7 @@ void Uci::handle_bench() {
 
 void Uci::handle_go(std::vector<std::string> tokens) {
     Search_data sd;
+    sd.hash_table = &hash_table;
     if (std::find(tokens.begin(), tokens.end(), "infinite") != tokens.end()) {
         timer.reset();
         std::thread search_thread{search_root, std::ref(position), std::ref(timer), std::ref(sd), true};

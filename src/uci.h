@@ -2,6 +2,7 @@
 #define PEACEKEEPER_UCI
 
 #include "board.h"
+#include "hash.h"
 #include "timer.h"
 #include <string>
 #include <vector>
@@ -9,6 +10,7 @@
 class Uci {
 public:
     Position position;
+    Hash_table hash_table{1};
     Limit_timer timer;
 
     void handle_bench();

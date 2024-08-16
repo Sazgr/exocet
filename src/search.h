@@ -2,6 +2,7 @@
 #define EXOCET_SEARCH
 
 #include "board.h"
+#include "hash.h"
 #include "move.h"
 #include "nnue.h"
 #include "timer.h"
@@ -15,6 +16,7 @@ struct Search_data {
     u64 nodes{};
     NNUE* nnue = nullptr;
     Limit_timer* timer = nullptr;
+    Hash_table* hash_table;
     Move pv_table[128][128];
 };
 

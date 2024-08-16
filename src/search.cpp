@@ -61,11 +61,17 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         return 0;
     }
     bool in_check = position.check();
+    Entry entry = sd.hash_table->probe(position.hashkey());
+    bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
+    if (!is_pv && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
+        return std::clamp(entry.score(), -18000, 18000);
+    }
     int score = -20001;
     int best_score = -20001;
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
+    int tt_flag = tt_alpha;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
         if (movelist[i].captured() != 12) movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
@@ -88,11 +94,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
              if (score > alpha) {
                 alpha = score;
                 best_move = movelist[i];
+                tt_flag = tt_exact;
                 if (is_pv) {
                     sd.pv_table[ss->ply][0] = best_move;
                     memcpy(&sd.pv_table[ss->ply][1], &sd.pv_table[ss->ply + 1][0], sizeof(Move) * 127);
                 }
                 if (score > beta) {
+                    sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }
             }
@@ -102,6 +110,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         sd.pv_table[ss->ply][0] = Move{};
         if (in_check) return -20000 + ss->ply;
         else return 0;
+    }
+    if (!sd.timer->stopped()) {
+        sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, depth);
     }
     return (*sd.timer).stopped() ? 0 : best_score;
 }
