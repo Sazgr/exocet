@@ -84,7 +84,14 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++sd.nodes;
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
-        score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
+        if (legal_moves == 1) {
+            score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
+        } else {
+            score = -search(position, ss + 1, sd, depth - 1, -alpha - 1, -alpha);
+            if (score > alpha && is_pv) {
+                score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
+            }
+        }
         position.undo_move<true>(movelist[i], sd.nnue);
         if ((*sd.timer).stopped()) return 0;
         if (score > best_score) {
