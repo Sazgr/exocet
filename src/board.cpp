@@ -303,6 +303,8 @@ template <bool update_nnue> void Position::make_move(Move move, NNUE* nnue) {
         nnue->push();
     }
     ++ply;
+    hash[ply] = hash[ply - 1];
+    hash[ply] ^= zobrist_black;
     int start = move.start();
     int end = move.end();
     int piece = move.piece();
