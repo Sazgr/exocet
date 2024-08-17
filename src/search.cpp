@@ -61,6 +61,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         return 0;
     }
     bool in_check = position.check();
+    int static_eval = position.static_eval(*sd.nnue);
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
     int score = -20001;
@@ -69,6 +70,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
+    if (depth < 4 && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 100 * depth >= beta)) {
+        return static_eval;
+    }
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
         if (tt_hit && movelist[i] == entry.move()) movelist[i].add_sortkey(20000);
