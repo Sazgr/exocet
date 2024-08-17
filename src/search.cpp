@@ -63,6 +63,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool in_check = position.check();
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
+    if (!is_pv && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
+        return std::clamp(entry.score(), -18000, 18000);
+    }
     int static_eval = position.static_eval(*sd.nnue);
     int score = -20001;
     int best_score = -20001;
