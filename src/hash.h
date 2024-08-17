@@ -35,7 +35,7 @@ struct Entry {
         return (data >> 40) & 0xFFull;
     }
     int score() {
-        return (data >> 24) & 0xFFFFull;
+        return static_cast<i16>(static_cast<u16>((data >> 24) & 0xFFFFull));
     }
     Move move() {
         return Move(data & 0xFFFFFFull);
