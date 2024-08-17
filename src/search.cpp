@@ -63,12 +63,25 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool in_check = position.check();
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
+    int static_eval = position.static_eval(*sd.nnue);
     int score = -20001;
     int best_score = -20001;
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
+    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && static_eval > beta) {
+        position.make_null();
+        ss->move = Move{};
+        ++sd.nodes;
+        (ss + 1)->ply = ss->ply + 1;
+        int r = 2;
+        score = -search(position, ss + 1, sd, std::max(0, depth - 1 - r), -beta, -beta + 1);
+        position.undo_null();
+        if (!sd.timer->stopped() && score >= beta) {
+            return (abs(score) > 18000 ? beta : score);
+        }
+    }
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
         if (tt_hit && movelist[i] == entry.move()) movelist[i].add_sortkey(20000);

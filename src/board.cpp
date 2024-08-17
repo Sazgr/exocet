@@ -429,6 +429,22 @@ template <bool update_nnue> void Position::undo_move(Move move, NNUE* nnue) {
 template void Position::undo_move<false>(Move move, NNUE* nnue);
 template void Position::undo_move<true>(Move move, NNUE* nnue);
 
+void Position::make_null() {
+    ++ply;
+    hash[ply] = hash[ply - 1];
+    hash[ply] ^= zobrist_enpassant[enpassant_square[ply - 1]];
+    hash[ply] ^= zobrist_black;
+    side_to_move = !side_to_move;
+    memcpy(castling_rights[ply], castling_rights[ply - 1], sizeof(int) * 4);
+    enpassant_square[ply] = 64;
+    hash[ply] ^= zobrist_enpassant[64];
+}
+
+void Position::undo_null() {
+    side_to_move = !side_to_move;
+    --ply;
+}
+
 bool Position::is_legal(Move move) {
     if (move.flag() == k_castling) {
         return !attacks_to((move.start() & 56) + 5, occupied, !side_to_move) && !attacks_to((move.start() & 56) + 6, occupied, !side_to_move);
