@@ -70,6 +70,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
+    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 200 * depth >= beta)) {
+        return static_eval;
+    }
     if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && static_eval > beta) {
         position.make_null();
         ss->move = Move{};
