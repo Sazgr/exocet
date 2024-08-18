@@ -11,6 +11,7 @@ class Uci {
 public:
     Position position;
     Hash_table hash_table{1};
+    Move_order move_order;
     Limit_timer timer;
 
     void handle_bench();

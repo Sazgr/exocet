@@ -92,7 +92,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     for (int i{}; i < movelist.size(); ++i) {
         if (tt_hit && movelist[i] == entry.move()) movelist[i].add_sortkey(20000);
         else if (movelist[i].captured() != 12) movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
-        else movelist[i].add_sortkey(0);
+        else movelist[i].add_sortkey(5000 + sd.move_order->history_score(movelist[i]));
     }
     movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
@@ -124,6 +124,12 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     memcpy(&sd.pv_table[ss->ply][1], &sd.pv_table[ss->ply + 1][0], sizeof(Move) * 127);
                 }
                 if (score > beta) {
+                    for (int j{0}; j<i; ++j) {
+                        if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], -depth * depth);
+                    }
+                    if (best_move.captured() == 12) {
+                        sd.move_order->history_update(best_move, depth * depth);
+                    }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }

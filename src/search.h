@@ -4,6 +4,7 @@
 #include "board.h"
 #include "hash.h"
 #include "move.h"
+#include "move_order.h"
 #include "nnue.h"
 #include "timer.h"
 
@@ -17,6 +18,7 @@ struct Search_data {
     NNUE* nnue = nullptr;
     Limit_timer* timer = nullptr;
     Hash_table* hash_table;
+    Move_order* move_order;
     Move pv_table[128][128];
 };
 
