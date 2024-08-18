@@ -19,6 +19,10 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
         position.generate_stage<all>(movelist);
     } else {
         position.generate_stage<noisy>(movelist);
+        for (int i{}; i < movelist.size(); ++i) {
+            movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+        }
+        movelist.sort(0, movelist.size());
     }
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
