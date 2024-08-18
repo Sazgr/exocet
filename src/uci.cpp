@@ -143,6 +143,12 @@ void Uci::handle_quit() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void Uci::handle_setoption(std::vector<std::string> tokens) {
+    if (tokens.size() >= 5 && tokens[2] == "Hash" && tokens[3] == "value") {
+        hash_table.resize(stoi(tokens[4]));
+    }
+}
+
 void Uci::handle_stop() {
     timer.stop = true;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

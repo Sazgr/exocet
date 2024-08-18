@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
             uci.handle_quit();
             return 0;
         }
+        if (tokens[0] == "setoption") {
+            uci.handle_setoption(tokens);
+        }
         if (tokens[0] == "stop") {
             uci.handle_stop();
         }

@@ -21,6 +21,7 @@ public:
     void handle_perftsplit(std::vector<std::string> tokens);
     void handle_position(std::vector<std::string> tokens);
     void handle_quit();
+    void handle_setoption(std::vector<std::string> tokens);
     void handle_stop();
     void handle_uci();
 };
