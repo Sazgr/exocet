@@ -103,10 +103,18 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++sd.nodes;
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
+        int reduction = 0;
+        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].captured() == 12) {
+            reduction = 1;
+            reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
+        } 
         if (legal_moves == 1) {
             score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
         } else {
-            score = -search(position, ss + 1, sd, depth - 1, -alpha - 1, -alpha);
+            score = -search(position, ss + 1, sd, depth - 1 - reduction, -alpha - 1, -alpha);
+            if (score > alpha && reduction) {
+                score = -search(position, ss + 1, sd, depth - 1, -alpha - 1, -alpha);
+            }
             if (score > alpha && is_pv) {
                 score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
             }
