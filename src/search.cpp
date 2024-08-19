@@ -168,8 +168,6 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     sd.timer = &timer;
     int score;
     Move best_move = Move{};
-    int alpha = -20001;
-    int beta = 20001;
     Movelist movelist;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
@@ -179,7 +177,29 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     }
     for (int depth = 1; depth < 64; ++depth) {
         if (timer.check(sd.nodes, depth)) break;
-        score = search(position, &ss[4], sd, depth, alpha, beta);
+        int delta = 50;
+        int alpha = -20001;
+        int beta = 20001;
+        if (depth >= 2) {
+            alpha = std::max(score - delta, -20001);
+            beta = std::min(score + delta,  20001);
+        }
+        while (!timer.stopped()) {
+            score = search(position, &ss[4], sd, depth, alpha, beta);
+            if (timer.stopped()) {
+                break;
+            }
+            if (score > alpha && score < beta) {
+                break;
+            }
+            if (score <= alpha) {
+                alpha = std::max(score - delta, -20001);
+            }
+            if (score >= beta) {
+                beta = std::min(score + delta, 20001);
+            }
+            delta *= 2;
+        }
         if (timer.stopped()) break;
         best_move = sd.pv_table[0][0];
         if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
