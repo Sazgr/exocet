@@ -62,6 +62,10 @@ public:
         for (int i{0}; i<size; ++i) table[i] = Entry{};
     }
     void insert(const u64 hash, int score, u8 type, Move move, u8 dp) {
+        Entry previous = table[hash & (size - 1)];
+        if (hash == previous.full_hash && move.is_null()) {
+            move = previous.move();
+        }
         table[hash & (size - 1)] = Entry{hash, move, score, type, dp};
     }
 private:
