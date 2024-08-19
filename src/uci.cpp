@@ -6,7 +6,9 @@
 #include <sstream>
 #include <thread>
 
+#ifndef VERSION
 #define VERSION "0.0.0-dev"
+#endif
 
 void Uci::handle_bench() {
     const static std::array<std::string, 20> fens = {
