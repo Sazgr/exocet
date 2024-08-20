@@ -1,5 +1,6 @@
 #include "search.h"
 #include "uci.h"
+#include <cmath>
 
 int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
@@ -109,7 +110,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
         if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].captured() == 12) {
-            reduction = 1;
+            reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
+            if (is_pv) --reduction;
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
