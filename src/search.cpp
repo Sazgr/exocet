@@ -180,7 +180,12 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     for (int depth = 1; depth < 64; ++depth) {
         if (timer.check(sd.nodes, depth)) break;
         score = search(position, &ss[4], sd, depth, alpha, beta);
-        if (timer.stopped()) break;
+        if (timer.stopped()) {
+            if (!sd.pv_table[0][0].is_null()) {
+                best_move = sd.pv_table[0][0];
+            }
+            break;
+        }
         best_move = sd.pv_table[0][0];
         if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
     }
