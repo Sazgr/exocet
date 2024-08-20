@@ -95,9 +95,17 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     }
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
-        if (tt_hit && movelist[i] == entry.move()) movelist[i].add_sortkey(20000);
-        else if (movelist[i].captured() != 12) movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
-        else movelist[i].add_sortkey(5000 + sd.move_order->history_score(movelist[i]));
+        if (tt_hit && movelist[i] == entry.move()) {
+            movelist[i].add_sortkey(20000);
+        } else if (movelist[i].captured() != 12) {
+            movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+        } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) {
+            movelist[i].add_sortkey(9999);
+        } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
+            movelist[i].add_sortkey(9998);
+        } else {
+            movelist[i].add_sortkey(5000 + sd.move_order->history_score(movelist[i]));
+        }
     }
     movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
@@ -143,6 +151,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     }
                     if (best_move.captured() == 12) {
                         sd.move_order->history_update(best_move, depth * depth);
+                        sd.move_order->killer_update(best_move, ss->ply);
                     }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
