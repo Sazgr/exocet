@@ -89,7 +89,7 @@ void Uci::handle_go(std::vector<std::string> tokens) {
         mytime = position.side_to_move ? wtime : btime;
         int myinc{position.side_to_move ? winc : binc};
         if (movestogo == 0) {movestogo = 20;}
-        movetime = (mytime / movestogo + myinc * 3 / 4);
+        movetime = (mytime / movestogo + myinc / 2);
         movetime = std::max(1, movetime);
     }
     timer.reset(calculate ? std::max(1, std::min(mytime * 3 / 4, 4 * movetime)) : movetime, calculate ? movetime : 0, nodes, 0, depth);
