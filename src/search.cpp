@@ -113,6 +113,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
+        if (movelist[i].captured() == 12 && depth < 8 && best_score > -18000 && !in_check && !gives_check && legal_moves >= 4 + 2 * depth * depth) {
+            position.undo_move<true>(movelist[i], sd.nnue);
+            break;
+        }
         ++sd.nodes;
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
