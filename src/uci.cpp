@@ -33,7 +33,6 @@ void Uci::handle_bench() {
         "1r5k/2pq2p1/3p3p/p1pP4/4QP2/PP1R3P/6PK/8 w - - 1 51",
         "q5k1/5ppp/1r3bn1/1B6/P1N2P2/BQ2P1P1/5K1P/8 b - - 2 34"
     };
-    u64 total_nodes = 0;
     double total_time = 0.0;
     std::string token;
     std::vector<std::string> tokens;
@@ -44,13 +43,12 @@ void Uci::handle_bench() {
         tokens.clear();
         std::istringstream parser(fen);
         while (parser >> token) {tokens.push_back(token);}
-        timer.reset(0, 0, 0, 0, 6);
+        timer.reset(0, 0, 0, 0, 8);
         position.load_fen(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5]);
         search_root(position, timer, sd, false);
-        total_nodes += sd.nodes;
         total_time += timer.elapsed();
     }
-    std::cout << total_nodes << " nodes " << static_cast<int>(total_nodes / total_time) << " nps" << std::endl;
+    std::cout << sd.nodes << " nodes " << static_cast<int>(sd.nodes / total_time) << " nps" << std::endl;
 }
 
 void Uci::handle_go(std::vector<std::string> tokens) {
