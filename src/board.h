@@ -75,6 +75,7 @@ public:
     Position();
     template <bool side> u64 promotion_rank();
     u64 attacks_to(int square, u64 occ, bool side);
+    u64 attacks_to(int square, u64 occ);
     u64 checkers(u64 occ);
     bool check();
     bool draw(int num_reps = 2);

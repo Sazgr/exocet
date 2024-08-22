@@ -1,6 +1,58 @@
+#include "attacks.h"
 #include "search.h"
 #include "uci.h"
 #include <cmath>
+
+bool see(Position& position, Move move, const int threshold) {
+    int to = move.end();
+    int from = move.start();
+    int target = position.board[to];
+    //making the move and not losing it must beat the threshold
+    int value = see_value[target >> 1] - threshold;
+    if (move.flag() > none && move.flag() < q_castling) return true;
+    if (value < 0) return false;
+    int attacker = position.board[from];
+    //trivial if we still beat the threshold after losing the piece
+    value -= see_value[attacker >> 1];
+    if (value >= 0)
+        return true;
+    //it doesn't matter if the to square is occupied or not
+    u64 occupied = position.occupied ^ (1ull << from) ^ (1ull << to);
+    u64 attackers = position.attacks_to(to, occupied);
+    u64 bishops = position.pieces[4] | position.pieces[5] | position.pieces[8] | position.pieces[9];
+    u64 rooks = position.pieces[6] | position.pieces[7] | position.pieces[8] | position.pieces[9];
+    int side = (attacker & 1) ^ 1;
+    u64 side_pieces[2] = {position.pieces[0] | position.pieces[2] | position.pieces[4] | position.pieces[6] | position.pieces[8] | position.pieces[10], position.pieces[1] | position.pieces[3] | position.pieces[5] | position.pieces[7] | position.pieces[9] | position.pieces[11]};
+    //make captures until one side runs out, or fail to beat threshold
+    while (true) {
+        //remove used pieces from attackers
+        attackers &= occupied;
+        u64 my_attackers = attackers & side_pieces[side];
+        if (!my_attackers) {
+            break;
+        }
+        //pick next least valuable piece to capture with
+        int piece_type;
+        for (piece_type = 0; piece_type < 6; ++piece_type) {
+            if (my_attackers & position.pieces[2 * piece_type + side]) break;
+        } 
+        side = !side;
+        value = -value - 1 - see_value[piece_type];
+        //value beats threshold, or can't beat threshold (negamaxed)
+        if (value >= 0) {
+            if (piece_type == 5 && (attackers & side_pieces[side]))
+                side = !side;
+            break;
+        }
+        //remove the used piece from occupied
+        occupied ^= (1ull << (get_lsb(my_attackers & (position.pieces[2 * piece_type] | position.pieces[2 * piece_type + 1]))));
+        if (piece_type == 0 || piece_type == 2 || piece_type == 4)
+            attackers |= bishop_attacks(occupied, to) & bishops;
+        if (piece_type == 3 || piece_type == 4)
+            attackers |= rook_attacks(occupied, to) & rooks;
+    }
+    return side != (attacker & 1);
+}
 
 int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
@@ -110,6 +162,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
+        if (!is_root && best_score > -18000) {
+            if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
+        }
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
