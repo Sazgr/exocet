@@ -164,7 +164,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
         if (!is_root && best_score > -18000) {
-            if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
+            if (movelist[i].captured() != 12 && !see(position, movelist[i], -250 * depth)) continue; //noisy see pruning
+            if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue; //quiet see pruning
         }
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
