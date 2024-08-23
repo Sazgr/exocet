@@ -11,6 +11,7 @@
 struct Search_stack {
     Move move{};
     int ply{};
+    int static_eval{};
 };
 
 struct Search_data {

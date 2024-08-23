@@ -125,13 +125,15 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
+    ss->static_eval = static_eval;
     int score = -20001;
     int best_score = -20001;
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
-    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 200 * depth >= beta)) {
+    bool improving = !in_check && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
+    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
         return static_eval;
     }
     if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && static_eval > beta) {
