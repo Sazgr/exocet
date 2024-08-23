@@ -152,7 +152,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (tt_hit && movelist[i] == entry.move()) {
             movelist[i].add_sortkey(20000);
         } else if (movelist[i].captured() != 12) {
-            movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+            movelist[i].add_sortkey(10000 + 1000 * see(position, movelist[i], -274) + movelist[i].mvv_lva());
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) {
             movelist[i].add_sortkey(9999);
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
