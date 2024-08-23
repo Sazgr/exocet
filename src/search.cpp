@@ -150,15 +150,15 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
         if (tt_hit && movelist[i] == entry.move()) {
-            movelist[i].add_sortkey(20000);
+            movelist[i].add_sortkey(30000);
         } else if (movelist[i].captured() != 12) {
-            movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+            movelist[i].add_sortkey(20000 * see(position, movelist[i], -274) + movelist[i].mvv_lva());
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) {
-            movelist[i].add_sortkey(9999);
+            movelist[i].add_sortkey(19999);
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
-            movelist[i].add_sortkey(9998);
+            movelist[i].add_sortkey(19998);
         } else {
-            movelist[i].add_sortkey(5000 + sd.move_order->history_score(movelist[i]));
+            movelist[i].add_sortkey(15000 + sd.move_order->history_score(movelist[i]));
         }
     }
     movelist.sort(0, movelist.size());
