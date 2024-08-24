@@ -133,7 +133,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Movelist movelist;
     int tt_flag = tt_alpha;
     bool improving = !in_check && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
-    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
+    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 75 - 150 * (depth - improving) >= beta)) {
         return static_eval;
     }
     if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && static_eval > beta) {
