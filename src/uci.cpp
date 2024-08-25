@@ -43,7 +43,7 @@ void Uci::handle_bench() {
         tokens.clear();
         std::istringstream parser(fen);
         while (parser >> token) {tokens.push_back(token);}
-        timer.reset(0, 0, 0, 0, 8);
+        timer.reset(0, 0, 0, 0, 10);
         position.load_fen(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5]);
         search_root(position, timer, sd, false);
         total_time += timer.elapsed();
