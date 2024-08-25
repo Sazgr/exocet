@@ -183,6 +183,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].captured() == 12) {
             reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
             if (is_pv) --reduction;
+            if (!improving) ++reduction;
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
