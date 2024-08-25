@@ -56,6 +56,9 @@ struct Move {
     inline constexpr int captured() const {return (data >> 16) & 0xF;}
     inline constexpr int end() const {return (data >> 3) & 0x7F;}
     inline constexpr bool is_null() const {return (data & 0x200);}
+    inline constexpr bool is_quiet() const {
+        return captured() == 12 && !((flag() + 3) & 4);
+    }
     inline void add_sortkey(int key) {data = (data & 0xFFFFFFFF) | (static_cast<u64>(key) << 32);}
     inline constexpr int sortkey() const{return data >> 32;}
     inline int mvv_lva() const {

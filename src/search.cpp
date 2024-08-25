@@ -167,7 +167,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
         if (!is_root && best_score > -18000) {
-            if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
+            if (movelist[i].is_quiet() && !see(position, movelist[i], -50 * depth * depth)) continue;
         }
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
@@ -180,7 +180,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
-        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].captured() == 12) {
+        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].is_quiet()) {
             reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
             if (is_pv) --reduction;
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
@@ -210,9 +210,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 }
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
-                        if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], -depth * depth);
+                        if (movelist[j].is_quiet()) sd.move_order->history_update(movelist[j], -depth * depth);
                     }
-                    if (best_move.captured() == 12) {
+                    if (best_move.is_quiet()) {
                         sd.move_order->history_update(best_move, depth * depth);
                         sd.move_order->killer_update(best_move, ss->ply);
                     }
