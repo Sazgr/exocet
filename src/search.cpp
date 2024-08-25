@@ -180,10 +180,11 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
-        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].captured() == 12) {
+        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].sortkey() < 20000) {
             reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
             if (is_pv) --reduction;
             if (!improving) ++reduction;
+            if (movelist[i].captured() != 12) --reduction;
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
