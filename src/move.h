@@ -59,9 +59,9 @@ struct Move {
     inline void add_sortkey(int key) {data = (data & 0xFFFFFFFF) | (static_cast<u64>(key) << 32);}
     inline constexpr int sortkey() const{return data >> 32;}
     inline int mvv_lva() const {
-        if (flag() == queen_pr) return 384;
+        if (flag() == queen_pr) return 64;
         if (flag() != none && !(flag() & 4)) return 0;
-        return (captured() << 5) + piece() ^ 15;
+        return ((captured() >> 1) << 3) + (piece() >> 1) ^ 7;
     }
     u64 data;
 };
