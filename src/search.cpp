@@ -154,7 +154,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (tt_hit && movelist[i] == entry.move()) {
             movelist[i].add_sortkey(30000);
         } else if (movelist[i].captured() != 12) {
-            movelist[i].add_sortkey(20000 * see(position, movelist[i], -274) + movelist[i].mvv_lva());
+            movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]) + movelist[i].mvv_lva());
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) {
             movelist[i].add_sortkey(19999);
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
@@ -213,10 +213,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
                         if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], -depth * depth);
+                        else sd.move_order->caphist_update(movelist[j], -depth * depth);
                     }
                     if (best_move.captured() == 12) {
                         sd.move_order->history_update(best_move, depth * depth);
                         sd.move_order->killer_update(best_move, ss->ply);
+                    } else {
+                        sd.move_order->caphist_update(best_move, depth * depth);
                     }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;

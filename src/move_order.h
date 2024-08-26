@@ -6,10 +6,12 @@
 
 struct Move_order {
     int history[12][64]{};
+    int caphist[13][12][64]{};
     Move killer[128][2]{};
 
     void reset() {
         std::memset(history, 0, sizeof(history));
+        std::memset(caphist, 0, sizeof(caphist));
         for (int i{}; i < 128; ++i) {
             killer[i][0] = Move{};
             killer[i][1] = Move{};
@@ -22,6 +24,14 @@ struct Move_order {
 
     int history_score(Move move) {
         return history[move.piece()][move.end()];
+    }
+
+    void caphist_update(Move move, int bonus) {
+       caphist[move.captured()][move.piece()][move.end()] += bonus - caphist[move.captured()][move.piece()][move.end()] * std::abs(bonus) / 1024;
+    }
+
+    int caphist_score(Move move) {
+        return caphist[move.captured()][move.piece()][move.end()];
     }
 
     void killer_update(Move move, int ply) {
