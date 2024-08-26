@@ -66,7 +66,7 @@ public:
         if (hash == previous.full_hash && move.is_null()) {
             move = previous.move();
         }
-        table[hash & (size - 1)] = Entry{hash, move, score, type, dp};
+        if (previous.depth() <= dp + 3) table[hash & (size - 1)] = Entry{hash, move, score, type, dp};
     }
 private:
     u64 size;
