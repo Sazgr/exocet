@@ -13,6 +13,7 @@ public:
     Hash_table hash_table{1};
     Move_order move_order;
     Limit_timer timer;
+    int move_overhead = 0;
 
     void handle_bench();
     void handle_go(std::vector<std::string> tokens);

@@ -90,6 +90,7 @@ void Uci::handle_go(std::vector<std::string> tokens) {
         int myinc{position.side_to_move ? winc : binc};
         if (movestogo == 0) {movestogo = 20;}
         movetime = (mytime / movestogo + myinc * 3 / 4);
+        movetime -= move_overhead;
         movetime = std::max(1, movetime);
     }
     timer.reset(calculate ? std::max(1, std::min(mytime * 3 / 4, 4 * movetime)) : movetime, calculate ? movetime : 0, nodes, 0, depth);
@@ -146,6 +147,9 @@ void Uci::handle_quit() {
 void Uci::handle_setoption(std::vector<std::string> tokens) {
     if (tokens.size() >= 5 && tokens[2] == "Hash" && tokens[3] == "value") {
         hash_table.resize(stoi(tokens[4]));
+    }
+    if (tokens.size() >= 6 && tokens[2] == "Move" && tokens[3] == "Overhead" && tokens[4] == "value") {
+        move_overhead = stoi(tokens[5]);
     }
 }
 
