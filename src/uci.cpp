@@ -7,7 +7,7 @@
 #include <thread>
 
 #ifndef VERSION
-#define VERSION "0.1.0-dev"
+#define VERSION "0.2.0-dev"
 #endif
 
 void Uci::handle_bench() {
