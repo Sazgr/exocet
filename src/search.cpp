@@ -212,10 +212,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 }
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
-                        if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], -depth * depth);
+                        if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], depth * depth, false);
                     }
                     if (best_move.captured() == 12) {
-                        sd.move_order->history_update(best_move, depth * depth);
+                        sd.move_order->history_update(best_move, depth * depth, true);
                         sd.move_order->killer_update(best_move, ss->ply);
                     }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
