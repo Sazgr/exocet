@@ -285,7 +285,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
             aspiration_delta = aspiration_delta * 2;
         }
     }
-    if (output) std::cout << "best_move " << best_move << std::endl;
+    if (output) std::cout << "bestmove " << best_move << std::endl;
     sd.nnue = nullptr;
     sd.timer = nullptr;
 }
