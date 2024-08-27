@@ -242,7 +242,9 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     nnue.refresh(position);
     sd.nnue = &nnue;
     sd.timer = &timer;
-    int score;
+    int score = -20001;
+    int last_score = -20001;
+    int aspiration_delta{};
     Move best_move = Move{};
     Movelist movelist;
     position.generate_stage<all>(movelist);
@@ -251,41 +253,39 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         best_move = movelist[i];
         break;
     }
-    for (int depth = 1; depth < 64; ++depth) {
-        if (timer.check(sd.nodes, depth)) break;
-        int delta = 50;
-        int alpha = -20001;
-        int beta = 20001;
-        if (depth >= 2) {
-            alpha = std::max(score - delta, -20001);
-            beta = std::min(score + delta,  20001);
+    int alpha = -20001;
+    int beta = 20001;
+    int depth = 1;
+    for (; depth < 64;) {
+        score = search(position, &ss[4], sd, depth, alpha, beta);
+        if (alpha < score && score < beta) {
+            if (!timer.stopped()) last_score = score;
+            if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
+            ++depth;
+            if (timer.check(sd.nodes, depth)) {break;}
+            if (!best_move.is_null() && timer.check(sd.nodes, depth, true, (movelist.size() == 1 ? 0.5 : 1))) {break;}
+            aspiration_delta = 28;
+            alpha = last_score - aspiration_delta;
+            beta = last_score + aspiration_delta;
+            continue;
         }
-        while (!timer.stopped()) {
-            score = search(position, &ss[4], sd, depth, alpha, beta);
-            if (timer.stopped()) {
-                break;
-            }
-            if (score > alpha && score < beta) {
-                break;
-            }
-            if (score <= alpha) {
-                alpha = std::max(score - delta, -20001);
-            }
-            if (score >= beta) {
-                beta = std::min(score + delta, 20001);
-            }
-            delta *= 2;
-        }
-        if (timer.stopped()) {
+        if (score <= alpha) {
+            //no time checks here because we failed low, we allow for some extra time
+            if (aspiration_delta < 300) alpha -= aspiration_delta;
+            else alpha = -20001;
+            aspiration_delta = aspiration_delta * 2;
+        } 
+        if (score >= beta) {
             if (!sd.pv_table[0][0].is_null()) {
                 best_move = sd.pv_table[0][0];
             }
-            break;
+            if (!best_move.is_null() && timer.check(sd.nodes, depth, true, (movelist.size() == 1 ? 0.5 : 1) * 1.35)) {break;}
+            if (aspiration_delta < 300) beta += aspiration_delta;
+            else beta = 20001;
+            aspiration_delta = aspiration_delta * 2;
         }
-        best_move = sd.pv_table[0][0];
-        if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
     }
-    if (output) std::cout << "bestmove " << best_move << std::endl;
+    if (output) std::cout << "best_move " << best_move << std::endl;
     sd.nnue = nullptr;
     sd.timer = nullptr;
 }
