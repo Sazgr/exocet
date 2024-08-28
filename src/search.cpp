@@ -107,6 +107,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
 }
 
 int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int alpha, int beta) {
+    sd.hash_table->prefetch(position.hashkey());
     bool is_root = (ss->ply == 0);
     bool is_pv = (beta - alpha) != 1;
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
