@@ -57,6 +57,11 @@ bool see(Position& position, Move move, const int threshold) {
 int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     bool in_check = position.check();
+    Entry entry = sd.hash_table->probe(position.hashkey());
+    bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
+    if (ss->excluded.is_null() && tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
+        return std::clamp(entry.score(), -18000, 18000);
+    }
     int static_eval = position.static_eval(*sd.nnue);
     int score = -20001;
     int best_score = -20001;
@@ -68,12 +73,25 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
+    int tt_flag = tt_alpha;
     if (in_check) {
         position.generate_stage<all>(movelist);
+        for (int i{}; i < movelist.size(); ++i) {
+            if (tt_hit && movelist[i] == entry.move()) {
+                movelist[i].add_sortkey(30000);
+            } else {
+                movelist[i].add_sortkey(0);
+            }
+        }
+        movelist.sort(0, movelist.size());
     } else {
         position.generate_stage<noisy>(movelist);
         for (int i{}; i < movelist.size(); ++i) {
-            movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+            if (tt_hit && movelist[i] == entry.move()) {
+                movelist[i].add_sortkey(30000);
+            } else {
+                movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+            }
         }
         movelist.sort(0, movelist.size());
     }
@@ -94,7 +112,9 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
              if (score > alpha) {
                 alpha = score;
                 best_move = movelist[i];
+                tt_flag = tt_exact;
                 if (score > beta) {
+                    sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, 0);
                     return score;
                 }
             }
@@ -102,6 +122,9 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     }
     if (in_check && legal_moves == 0) {
         return -20000 + ss->ply;
+    }
+    if (!sd.timer->stopped()) {
+        sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, 0);
     }
     return (*sd.timer).stopped() ? 0 : best_score;
 }
