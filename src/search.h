@@ -10,6 +10,7 @@
 
 struct Search_stack {
     Move move{};
+    Move excluded{};
     int ply{};
     int static_eval{};
 };

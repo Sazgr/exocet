@@ -122,7 +122,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     bool in_check = position.check();
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
-    if (!is_pv && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
+    if (!is_pv && ss->excluded.is_null() && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
@@ -133,11 +133,11 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
-    bool improving = !in_check && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
-    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
+    bool improving = !in_check && ss->excluded.is_null() && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
+    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
         return static_eval;
     }
-    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && beta > -18000 && static_eval > beta) {
+    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
         position.make_null();
         ss->move = Move{};
         ++sd.nodes;
@@ -167,9 +167,21 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     }
     movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
+        if (movelist[i] == ss->excluded) continue;
         if (!position.is_legal(movelist[i])) continue;
         if (!is_root && best_score > -18000) {
             if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
+        }
+        int extension = 0;
+        if (movelist[i] == entry.move() && !is_root && depth >= 6 && (entry.type() == tt_exact || entry.type() == tt_beta) && abs(entry.score()) < 18000 && entry.depth() >= depth - 3) {
+            int singular_beta = entry.score() - depth * 4;
+            int singular_depth = (depth - 1) / 2;
+            ss->excluded = movelist[i];
+            int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta);
+            ss->excluded = Move{};
+            if (singular_score < singular_beta) {
+                extension = 1;
+            }
         }
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
@@ -190,14 +202,14 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
-            score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
+            score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha);
         } else {
-            score = -search(position, ss + 1, sd, depth - 1 - reduction, -alpha - 1, -alpha);
+            score = -search(position, ss + 1, sd, depth - 1 - reduction + extension, -alpha - 1, -alpha);
             if (score > alpha && reduction) {
-                score = -search(position, ss + 1, sd, depth - 1, -alpha - 1, -alpha);
+                score = -search(position, ss + 1, sd, depth - 1 + extension, -alpha - 1, -alpha);
             }
             if (score > alpha && is_pv) {
-                score = -search(position, ss + 1, sd, depth - 1, -beta, -alpha);
+                score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha);
             }
         }
         position.undo_move<true>(movelist[i], sd.nnue);
@@ -220,7 +232,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                         sd.move_order->history_update(best_move, depth * depth);
                         sd.move_order->killer_update(best_move, ss->ply);
                     }
-                    sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
+                    if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }
             }
@@ -231,7 +243,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (in_check) return -20000 + ss->ply;
         else return 0;
     }
-    if (!sd.timer->stopped()) {
+    if (ss->excluded.is_null() && !sd.timer->stopped()) {
         sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, depth);
     }
     return (*sd.timer).stopped() ? 0 : best_score;
