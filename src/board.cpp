@@ -492,7 +492,7 @@ void Position::nnue_update_accumulator(NNUE& nnue) {
 }
 
 int Position::static_eval(NNUE& nnue) {
-    nnue.refresh(*this);
+    nnue_update_accumulator(nnue);
     return nnue.evaluate(side_to_move);
 }
 
