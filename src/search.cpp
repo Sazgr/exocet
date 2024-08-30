@@ -211,7 +211,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         bool gives_check = position.check();
         if (depth < 8 && !in_check && !gives_check && legal_moves >= (4 + depth * depth) * (improving + 1)) {
             position.undo_move<true>(movelist[i], sd.nnue);
-            continue;
+            break;
         }
         ++sd.nodes;
         ++legal_moves;
