@@ -290,6 +290,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     }
     for (int depth = 1; depth < 64; ++depth) {
         if (timer.check(sd.nodes, depth)) break;
+        if (timer.check(sd.nodes, depth, true, 1.0)) break;
         int delta = 50;
         int alpha = -20001;
         int beta = 20001;
