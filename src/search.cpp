@@ -217,7 +217,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
-        if (depth > 2 && !in_check && legal_moves > 4 && movelist[i].sortkey() < 20000) {
+        if (depth > 2 && !in_check && legal_moves > 2 + 2 * is_pv && movelist[i].sortkey() < 20000) {
             reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
             if (is_pv) --reduction;
             if (!improving) ++reduction;
