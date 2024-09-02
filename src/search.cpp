@@ -185,7 +185,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
             movelist[i].add_sortkey(19998);
         } else {
-            movelist[i].add_sortkey(15000 + sd.move_order->history_score(movelist[i]));
+            movelist[i].add_sortkey(15000 + sd.move_order->history_score(movelist[i]) + sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2 + sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2);
         }
     }
     movelist.sort(0, movelist.size());
@@ -222,7 +222,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             if (is_pv) --reduction;
             if (!improving) ++reduction;
             if (movelist[i].captured() != 12) --reduction;
-            if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - 15000) / 400, -2, 2);
+            if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - 15000) / 600, -2, 2);
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
@@ -250,10 +250,16 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 }
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
-                        if (movelist[j].captured() == 12) sd.move_order->history_update(movelist[j], -depth * depth);
+                        if (movelist[j].captured() == 12) {
+                            sd.move_order->history_update(movelist[j], -depth * depth);
+                            sd.move_order->continuation_update((ss - 2)->move, movelist[j], -depth * depth);
+                            sd.move_order->continuation_update((ss - 1)->move, movelist[j], -depth * depth);
+                        }
                     }
                     if (best_move.captured() == 12) {
                         sd.move_order->history_update(best_move, depth * depth);
+                        sd.move_order->continuation_update((ss - 2)->move, best_move, depth * depth);
+                        sd.move_order->continuation_update((ss - 1)->move, best_move, depth * depth);
                         sd.move_order->killer_update(best_move, ss->ply);
                     }
                     if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
