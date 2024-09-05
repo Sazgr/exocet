@@ -468,7 +468,7 @@ bool Position::is_legal(Move move) {
     }
 
     if (move.flag() == enpassant) {
-        return !attacks_to(get_lsb(pieces[black_king + side_to_move]), occupied ^ (1ull << move.start()) ^ (1ull << move.end()) ^ (1ull << (move.end() ^ 8)), !side_to_move);
+        return !(attacks_to(get_lsb(pieces[black_king + side_to_move]), occupied ^ (1ull << move.start()) ^ (1ull << move.end()) ^ (1ull << (move.end() ^ 8)), !side_to_move) & ~(1ull << (move.end() ^ 8)));
     }
 
     return true;
