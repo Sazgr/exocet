@@ -294,6 +294,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     sd.timer = &timer;
     int score;
     Move best_move = Move{};
+    bool hard_limit_reached = false;
     Movelist movelist;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
@@ -314,26 +315,28 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         while (!timer.stopped()) {
             score = search(position, &ss[4], sd, depth, alpha, beta);
             if (timer.stopped()) {
+                hard_limit_reached = true;
                 break;
             }
             if (score > alpha && score < beta) {
+                best_move = sd.pv_table[0][0];
                 break;
             }
             if (score <= alpha) {
                 alpha = std::max(score - delta, -20001);
             }
             if (score >= beta) {
+                best_move = sd.pv_table[0][0];
                 beta = std::min(score + delta, 20001);
             }
             delta *= 2;
         }
-        if (timer.stopped()) {
+        if (hard_limit_reached) {
             if (!sd.pv_table[0][0].is_null()) {
                 best_move = sd.pv_table[0][0];
             }
             break;
         }
-        best_move = sd.pv_table[0][0];
         if (output) print_info(score, depth, sd.nodes, static_cast<int>(sd.nodes / timer.elapsed()), static_cast<int>(timer.elapsed() * 1000), sd.pv_table[0]);
     }
     if (output) std::cout << "bestmove " << best_move << std::endl;
