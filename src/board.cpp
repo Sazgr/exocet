@@ -491,9 +491,13 @@ void Position::nnue_update_accumulator(NNUE& nnue) {
     }
 }
 
+int Position::phase() {
+    return popcount(pieces[2] | pieces[3] | pieces[4] | pieces[5]) + 2 * (popcount(pieces[6] | pieces[7])) + 4 * (popcount(pieces[8] | pieces[9]));
+}
+
 int Position::static_eval(NNUE& nnue) {
     nnue_update_accumulator(nnue);
-    return nnue.evaluate(side_to_move);
+    return nnue.evaluate(side_to_move) * (72 + phase()) / 96;
 }
 
 void Position::recalculate_zobrist() {

@@ -91,6 +91,7 @@ public:
     void undo_null();
     bool is_legal(Move move);
     void nnue_update_accumulator(NNUE& nnue);
+    int phase();
     int static_eval(NNUE& nnue);
     void recalculate_zobrist();
     u64 hashkey();
