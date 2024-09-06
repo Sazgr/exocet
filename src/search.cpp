@@ -325,7 +325,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
             if (score >= beta) {
                 beta = std::min(score + delta, 20001);
             }
-            delta *= 2;
+            delta += delta / 2;
         }
         if (timer.stopped()) {
             if (!sd.pv_table[0][0].is_null()) {
