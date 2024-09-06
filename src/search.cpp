@@ -97,7 +97,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     }
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
-        if (!in_check && !see(position, movelist[i], -274)) continue;
+        if (!in_check && !see(position, movelist[i], -1)) continue;
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
