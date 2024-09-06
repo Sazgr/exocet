@@ -185,7 +185,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         } else if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) {
             movelist[i].add_sortkey(19998);
         } else {
-            movelist[i].add_sortkey(15000 + sd.move_order->history_score(movelist[i]) + sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2 + sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2);
+            int sort_score = 15000;
+            sort_score += sd.move_order->history_score(movelist[i]);
+            sort_score += sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2;
+            sort_score += sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2;
+            if (movelist[i] == sd.move_order->killer_move(ss->ply - 2, 0)) sort_score += 400;
+            if (movelist[i] == sd.move_order->killer_move(ss->ply - 2, 1)) sort_score += 200;
+            movelist[i].add_sortkey(sort_score);
         }
     }
     movelist.sort(0, movelist.size());
