@@ -566,7 +566,7 @@ bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fe
     else return false;
 
     halfmove_clock[0] = stoi(fen_hmove_clock);
-
+    ply_counter = 2 * stoi(fen_fmove_counter) + !side_to_move;
     recalculate_zobrist();
     return true;
 }

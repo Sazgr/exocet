@@ -66,6 +66,7 @@ public:
     int enpassant_square[1024]{64};
     int castling_rights[1024][4]{{0, 7, 56, 63}};
     int halfmove_clock[1024]{0};
+    int ply_counter{0}; //for time management purposes only
     u64 hash[1024]{};
 
     std::vector<std::array<int, 2>> nnue_sub;

@@ -88,8 +88,11 @@ void Uci::handle_go(std::vector<std::string> tokens) {
     if (movetime == 0 && calculate == true) {
         mytime = position.side_to_move ? wtime : btime;
         int myinc{position.side_to_move ? winc : binc};
-        if (movestogo == 0) {movestogo = 20;}
-        movetime = (mytime / movestogo + myinc * 3 / 4);
+        if (movestogo == 0) {
+            double p = position.ply_counter;
+            movestogo = static_cast<int>(59.3 + (72830.0 - p * 2330.0) / (p * p + p * 10.0 + 2644.0));
+        }
+        movetime = (mytime - myinc) / movestogo + myinc;
         movetime -= move_overhead;
         movetime = std::max(1, movetime);
     }
@@ -135,6 +138,7 @@ void Uci::handle_position(std::vector<std::string> tokens) {
         for (auto iter = ++std::find(tokens.begin(), tokens.end(), "moves"); iter != tokens.end(); ++iter) {
             position.parse_move(move, *iter);
             position.make_move(move);
+            ++position.ply_counter;
         }
     }
 }
