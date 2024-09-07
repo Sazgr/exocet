@@ -129,7 +129,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     return (*sd.timer).stopped() ? 0 : best_score;
 }
 
-int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int alpha, int beta) {
+int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int alpha, int beta, bool cutnode) {
     sd.hash_table->prefetch(position.hashkey());
     bool is_root = (ss->ply == 0);
     bool is_pv = (beta - alpha) != 1;
@@ -166,7 +166,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++sd.nodes;
         (ss + 1)->ply = ss->ply + 1;
         int r = 2 + depth / 4 + std::sqrt(static_eval - beta) / 12;
-        score = -search(position, ss + 1, sd, std::max(0, depth - 1 - r), -beta, -beta + 1);
+        score = -search(position, ss + 1, sd, std::max(0, depth - 1 - r), -beta, -beta + 1, !cutnode);
         position.undo_null();
         if (!sd.timer->stopped() && score >= beta) {
             return (abs(score) > 18000 ? beta : score);
@@ -202,7 +202,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             int singular_beta = entry.score() - depth * 4;
             int singular_depth = (depth - 1) / 2;
             ss->excluded = movelist[i];
-            int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta);
+            int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta, cutnode);
             ss->excluded = Move{};
             if (singular_score < singular_beta) {
                 extension = 1;
@@ -225,19 +225,20 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
             if (is_pv) --reduction;
             if (!improving) ++reduction;
+            if (cutnode) ++reduction;
             if (movelist[i].captured() != 12) --reduction;
             if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - 15000) / 400, -2, 2);
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
-            score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha);
+            score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha, false);
         } else {
-            score = -search(position, ss + 1, sd, depth - 1 - reduction + extension, -alpha - 1, -alpha);
+            score = -search(position, ss + 1, sd, depth - 1 - reduction + extension, -alpha - 1, -alpha, true);
             if (score > alpha && reduction) {
-                score = -search(position, ss + 1, sd, depth - 1 + extension, -alpha - 1, -alpha);
+                score = -search(position, ss + 1, sd, depth - 1 + extension, -alpha - 1, -alpha, !cutnode);
             }
             if (score > alpha && is_pv) {
-                score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha);
+                score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha, false);
             }
         }
         position.undo_move<true>(movelist[i], sd.nnue);
@@ -314,7 +315,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
             beta = std::min(score + delta,  20001);
         }
         while (!timer.stopped()) {
-            score = search(position, &ss[4], sd, depth, alpha, beta);
+            score = search(position, &ss[4], sd, depth, alpha, beta, false);
             if (timer.stopped()) {
                 break;
             }
