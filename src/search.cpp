@@ -150,6 +150,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     }
     int static_eval = position.static_eval(*sd.nnue);
     ss->static_eval = static_eval;
+    sd.move_order->killer_clear(ss->ply + 1);
     int score = -20001;
     int best_score = -20001;
     int legal_moves = 0;

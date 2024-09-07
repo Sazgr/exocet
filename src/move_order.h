@@ -53,6 +53,11 @@ struct Move_order {
         return continuation[index];
     }
 
+    void killer_clear(int ply) {
+        killer[ply][0] = Move{};
+        killer[ply][1] = Move{};
+    }
+
     void killer_update(Move move, int ply) {
         if (killer[ply][0] != move) {
             killer[ply][1] = killer[ply][0];
