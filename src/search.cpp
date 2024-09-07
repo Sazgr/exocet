@@ -160,7 +160,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
         return static_eval;
     }
-    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
+    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta && !(tt_hit && (entry.type() == tt_alpha || entry.type() == tt_exact) && entry.score() < beta)) {
         position.make_null();
         ss->move = Move{};
         ++sd.nodes;
