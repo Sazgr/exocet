@@ -194,7 +194,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     for (int i{}; i < movelist.size(); ++i) {
         if (movelist[i] == ss->excluded) continue;
         if (!position.is_legal(movelist[i])) continue;
-        if (!is_root && best_score > -18000) {
+        if (!is_root && !in_check && best_score > -18000) {
             if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
         }
         int extension = 0;
