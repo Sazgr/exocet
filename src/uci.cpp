@@ -179,6 +179,9 @@ void Uci::handle_uci() {
     std::cout << "id author Kyle Zhang\n";
     std::cout << "option name Hash type spin default 1 min 1 max 1048576\n";
     std::cout << "option name Threads type spin default 1 min 1 max 1\n";
+    for (Param* param : params) {
+        std::cout << "option name " << param->name << " type spin default " << param->value << " min " << param->min << " max " << param->max << "\n";
+    }
     std::cout << "uciok\n";
     std::cout << std::flush;
 }
