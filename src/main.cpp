@@ -24,6 +24,7 @@
 #include <sstream>
 
 int main(int argc, char *argv[]) {
+    fill_lmr_table();
     nnue_init();
     Uci uci;
     if (argc > 1 && std::string{argv[1]} == "bench") {

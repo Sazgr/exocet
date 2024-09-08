@@ -4,6 +4,8 @@
 #include "uci.h"
 #include <cmath>
 
+int lmr_table[256][256] {};
+
 bool see(Position& position, Move move, const int threshold) {
     int to = move.end();
     int from = move.start();
@@ -223,7 +225,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
         if (depth > 2 && !in_check && legal_moves > 2 + 2 * is_pv && movelist[i].sortkey() < 20000) {
-            reduction = static_cast<int>((lmr_base / 100.0) + std::log(legal_moves) * std::log(depth) / (lmr_divisor / 100.0));
+            reduction = lmr_table[legal_moves][depth];
             if (is_pv) --reduction;
             if (!improving) ++reduction;
             if (cutnode) ++reduction;
