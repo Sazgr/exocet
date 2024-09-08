@@ -6,6 +6,7 @@
 
 struct Move_order {
     int history[12][64]{};
+    int butterfly[2][64][64]{};
     int caphist[13][12][64]{};
     int* continuation;
     Move killer[128][2]{};
@@ -31,6 +32,14 @@ struct Move_order {
 
     int history_score(Move move) {
         return history[move.piece()][move.end()];
+    }
+
+    void butterfly_update(Move move, int bonus) {
+        butterfly[move.piece() & 1][move.start()][move.end()] += bonus - butterfly[move.piece() & 1][move.start()][move.end()] * std::abs(bonus) / 1024;
+    }
+
+    int butterfly_score(Move move) {
+        return butterfly[move.piece() & 1][move.start()][move.end()];
     }
 
     void caphist_update(Move move, int bonus) {

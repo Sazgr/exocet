@@ -183,7 +183,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]) + 4 * movelist[i].mvv_lva());
         } else {
             int sort_score = 15000;
-            sort_score += sd.move_order->history_score(movelist[i]);
+            sort_score += sd.move_order->history_score(movelist[i]) / 2;
+            sort_score += sd.move_order->butterfly_score(movelist[i]) / 2;
             sort_score += sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2;
             sort_score += sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2;
             if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) sort_score += klr_bonus_0;
@@ -258,6 +259,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     for (int j{0}; j<i; ++j) {
                         if (movelist[j].captured() == 12) {
                             sd.move_order->history_update(movelist[j], -depth * depth);
+                            sd.move_order->butterfly_update(movelist[j], -depth * depth);
                             sd.move_order->continuation_update((ss - 2)->move, movelist[j], -depth * depth);
                             sd.move_order->continuation_update((ss - 1)->move, movelist[j], -depth * depth);
                         } else {
@@ -266,6 +268,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     }
                     if (best_move.captured() == 12) {
                         sd.move_order->history_update(best_move, depth * depth);
+                        sd.move_order->butterfly_update(best_move, depth * depth);
                         sd.move_order->continuation_update((ss - 2)->move, best_move, depth * depth);
                         sd.move_order->continuation_update((ss - 1)->move, best_move, depth * depth);
                         sd.move_order->killer_update(best_move, ss->ply);
