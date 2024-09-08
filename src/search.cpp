@@ -1,4 +1,5 @@
 #include "attacks.h"
+#include "params.h"
 #include "search.h"
 #include "uci.h"
 #include <cmath>
@@ -157,7 +158,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Movelist movelist;
     int tt_flag = tt_alpha;
     bool improving = !in_check && ss->excluded.is_null() && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
-    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - 100 - 200 * (depth - improving) >= beta)) {
+    if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
         return static_eval;
     }
     if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
@@ -185,8 +186,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             sort_score += sd.move_order->history_score(movelist[i]);
             sort_score += sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2;
             sort_score += sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2;
-            if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) sort_score += 900;
-            if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) sort_score += 450;
+            if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) sort_score += klr_bonus_0;
+            if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) sort_score += klr_bonus_1;
             movelist[i].add_sortkey(sort_score);
         }
     }
@@ -195,11 +196,11 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (movelist[i] == ss->excluded) continue;
         if (!position.is_legal(movelist[i])) continue;
         if (!is_root && best_score > -18000) {
-            if (movelist[i].captured() == 12 && !see(position, movelist[i], -50 * depth * depth)) continue;
+            if (movelist[i].captured() == 12 && !see(position, movelist[i], -spr_quiet_threshold * depth * depth)) continue;
         }
         int extension = 0;
         if (movelist[i] == entry.move() && !is_root && depth >= 6 && (entry.type() == tt_exact || entry.type() == tt_beta) && abs(entry.score()) < 18000 && entry.depth() >= depth - 3) {
-            int singular_beta = entry.score() - depth * 4;
+            int singular_beta = entry.score() - depth * sxt_margin / 16;
             int singular_depth = (depth - 1) / 2;
             ss->excluded = movelist[i];
             int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta, cutnode);
@@ -222,12 +223,12 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
         if (depth > 2 && !in_check && legal_moves > 2 + 2 * is_pv && movelist[i].sortkey() < 20000) {
-            reduction = static_cast<int>(0.5 + std::log(legal_moves) * std::log(depth) / 3.0);
+            reduction = static_cast<int>((lmr_base / 100.0) + std::log(legal_moves) * std::log(depth) / (lmr_divisor / 100.0));
             if (is_pv) --reduction;
             if (!improving) ++reduction;
             if (cutnode) ++reduction;
             if (movelist[i].captured() != 12) --reduction;
-            if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - 15000) / 400, -2, 2);
+            if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - hsl_subtractor) / hsl_divisor, -2, 2);
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         } 
         if (legal_moves == 1) {
@@ -307,7 +308,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     for (int depth = 1; depth < 64; ++depth) {
         if (timer.check(sd.nodes, depth)) break;
         if (timer.check(sd.nodes, depth, true, 1.0)) break;
-        int delta = 50;
+        int delta = asp_initial;
         int alpha = -20001;
         int beta = 20001;
         if (depth >= 2) {

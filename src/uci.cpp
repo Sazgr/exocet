@@ -1,3 +1,4 @@
+#include "params.h"
 #include "perft.h"
 #include "search.h"
 #include "uci.h"
@@ -151,9 +152,14 @@ void Uci::handle_quit() {
 void Uci::handle_setoption(std::vector<std::string> tokens) {
     if (tokens.size() >= 5 && tokens[2] == "Hash" && tokens[3] == "value") {
         hash_table.resize(stoi(tokens[4]));
-    }
-    if (tokens.size() >= 6 && tokens[2] == "Move" && tokens[3] == "Overhead" && tokens[4] == "value") {
+    } else if (tokens.size() >= 6 && tokens[2] == "Move" && tokens[3] == "Overhead" && tokens[4] == "value") {
         move_overhead = stoi(tokens[5]);
+    } else { //it is a spsa parameter
+        for (Param* param : params) {
+            if (tokens.size() >= 5 && tokens[2] == param->name && tokens[3] == "value") {
+                param->value = stoi(tokens[4]);
+            }
+        }
     }
 }
 
