@@ -20,6 +20,7 @@ public:
     void handle_isready();
     void handle_perft(std::vector<std::string> tokens);
     void handle_perftsplit(std::vector<std::string> tokens);
+    void handle_option();
     void handle_position(std::vector<std::string> tokens);
     void handle_quit();
     void handle_setoption(std::vector<std::string> tokens);

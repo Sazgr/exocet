@@ -53,6 +53,9 @@ int main(int argc, char *argv[]) {
         if (tokens[0] == "isready") {
             uci.handle_isready();
         }
+        if (tokens[0] == "options") {
+            uci.handle_option();
+        }
         if (tokens[0] == "perft") {
             uci.handle_perft(tokens);
         }

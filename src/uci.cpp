@@ -107,6 +107,12 @@ void Uci::handle_isready() {
     std::cout << std::flush;
 }
 
+void Uci::handle_option() {
+    for (Param* param : params) {
+        std::cout << param->name << ", int, " << param->value << ".0, " << param->min << ".0, " << param->max << ".0, " << param->step << ".0, 0.002" << std::endl;
+    }
+}
+
 void Uci::handle_perft(std::vector<std::string> tokens) {
     int depth = 1;
     if (tokens.size() >= 2) {depth = stoi(tokens[1]);}
