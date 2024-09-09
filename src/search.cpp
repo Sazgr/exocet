@@ -93,7 +93,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
             if (tt_hit && movelist[i] == entry.move()) {
                 movelist[i].add_sortkey(30000);
             } else {
-                movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+                movelist[i].add_sortkey(10000 + C:\Python\Python311\python.exe C:\kyle\chess2\ob\exocet_ct.py);
             }
         }
         movelist.sort(0, movelist.size());
