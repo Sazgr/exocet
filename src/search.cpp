@@ -155,6 +155,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     ss->static_eval = static_eval;
     int score = -20001;
     int best_score = -20001;
+    ss->double_extensions = (is_root ? 0 : (ss - 1)->double_extensions);
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
@@ -209,7 +210,12 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta, cutnode);
             ss->excluded = Move{};
             if (singular_score < singular_beta) {
-                extension = 1;
+                if (!is_pv && singular_score < singular_beta - 100 && ss->double_extensions <= 4) {
+                    extension = 2;
+                    ++ss->double_extensions;
+                } else {
+                    extension = 1;
+                }
             } else if (singular_beta >= beta) {
                 return singular_beta;
             }
