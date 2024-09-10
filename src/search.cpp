@@ -335,6 +335,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
                 break;
             }
             if (score <= alpha) {
+                beta = (alpha + beta) / 2;
                 alpha = std::max(score - delta, -20001);
             }
             if (score >= beta) {
