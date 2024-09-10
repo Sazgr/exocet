@@ -10,6 +10,7 @@ struct Move_order {
     int caphist[13][12][64]{};
     int* continuation;
     Move killer[128][2]{};
+    int correction[65536][2]{};
 
     Move_order() {
         continuation = new int[12 * 64 * 12 * 64];
@@ -70,6 +71,16 @@ struct Move_order {
     }
     Move killer_move(int ply, int index) {
         return killer[ply][index];
+    }
+
+    void correction_update(u64 pawn_hash, bool side_to_move, int correction_diff, int bonus) {
+        correction_diff *= 256;
+        correction[pawn_hash & 0xffffull][side_to_move] = ((256 - bonus) * correction[pawn_hash & 0xffffull][side_to_move] + bonus * correction_diff) / 256;
+        correction[pawn_hash & 0xffffull][side_to_move] = std::clamp(correction[pawn_hash & 0xffffull][side_to_move], -32768, 32768);
+    }
+
+    int correction_value(u64 pawn_hash, bool side_to_move) {
+        return correction[pawn_hash & 0xffffull][side_to_move] / 256;
     }
 };
 
