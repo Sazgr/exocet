@@ -68,6 +68,7 @@ public:
     int halfmove_clock[1024]{0};
     int ply_counter{0}; //for time management purposes only
     u64 hash[1024]{};
+    u64 pawn_hash[1024]{};
 
     std::vector<std::array<int, 2>> nnue_sub;
     std::vector<std::array<int, 2>> nnue_add;
@@ -94,6 +95,7 @@ public:
     int static_eval(NNUE& nnue);
     void recalculate_zobrist();
     u64 hashkey();
+    u64 pawn_hashkey();
     bool load_fen(std::string fen_pos, std::string fen_stm, std::string fen_castling, std::string fen_ep, std::string fen_hmove_clock, std::string fen_fmove_counter);
     bool parse_move(Move& out, std::string move);
 };
