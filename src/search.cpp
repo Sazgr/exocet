@@ -326,8 +326,9 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
             alpha = std::max(score - delta, -20001);
             beta = std::min(score + delta,  20001);
         }
+        int asp_reduction{};
         while (!timer.stopped()) {
-            score = search(position, &ss[4], sd, depth, alpha, beta, false);
+            score = search(position, &ss[4], sd, std::max(depth - asp_reduction, 1), alpha, beta, false);
             if (timer.stopped()) {
                 break;
             }
@@ -335,9 +336,11 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
                 break;
             }
             if (score <= alpha) {
+                asp_reduction = 0;
                 alpha = std::max(score - delta, -20001);
             }
             if (score >= beta) {
+                asp_reduction = std::min(asp_reduction + 1, 4);
                 beta = std::min(score + delta, 20001);
             }
             delta *= 2;
