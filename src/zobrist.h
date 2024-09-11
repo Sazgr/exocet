@@ -49,4 +49,15 @@ constexpr std::array<u64, 65> generate_zobrist_castling() {
 }
 constexpr std::array<u64, 65> zobrist_castling = generate_zobrist_castling();
 
+constexpr std::array<std::array<u64, 64>, 13> generate_zobrist_pawn() {
+    std::array<std::array<u64, 64>, 13> constexpr_zobrist_pawn{};
+    for (int i{}; i < 2; ++i) {
+        for (int j{}; j < 64; ++j) {
+            constexpr_zobrist_pawn[i][j] = zobrist_pieces[i][j];
+        }
+    }
+    return constexpr_zobrist_pawn;
+}
+constexpr std::array<std::array<u64, 64>, 13> zobrist_pawn = generate_zobrist_pawn();
+
 #endif
