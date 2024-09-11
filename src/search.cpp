@@ -151,7 +151,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     if (!is_pv && ss->excluded.is_null() && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
         return std::clamp(entry.score(), -18000, 18000);
     }
-    int static_eval = position.static_eval(*sd.nnue);
+    int raw_static_eval = position.static_eval(*sd.nnue);
+    int static_eval = raw_static_eval;
+    static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
     ss->static_eval = static_eval;
     int score = -20001;
     int best_score = -20001;
@@ -293,6 +295,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         sd.pv_table[ss->ply][0] = Move{};
         if (in_check) return -20000 + ss->ply;
         else return 0;
+    }
+    if (!in_check && (best_move == Move{} || best_move.captured() == 12) && tt_flag == tt_exact) {
+        int correction_diff = std::clamp(best_score - raw_static_eval, -256, 256);
+        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
     }
     if (ss->excluded.is_null() && !sd.timer->stopped()) {
         sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, depth);
