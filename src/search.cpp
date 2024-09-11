@@ -285,6 +285,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     } else {
                         sd.move_order->caphist_update(best_move, depth * depth);
                     }
+                    if (!in_check && (best_move == Move{} || best_move.captured() == 12) && (entry.type() == tt_exact || (entry.type() == tt_alpha && best_score < raw_static_eval) || (entry.type() == tt_beta && best_score > raw_static_eval))) {
+                        int correction_diff = std::clamp(best_score - raw_static_eval, -256, 256);
+                        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
+                    }
                     if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }
