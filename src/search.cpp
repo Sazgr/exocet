@@ -66,6 +66,9 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
+    if (tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= static_eval) || (entry.type() == tt_beta && entry.score() >= static_eval))) {
+        static_eval = std::clamp(entry.score(), -18000, 18000);
+    }
     int score = -20001;
     int best_score = -20001;
     if (!in_check) { //stand pat
