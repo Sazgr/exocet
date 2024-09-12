@@ -7,8 +7,8 @@ Param rfp_base = Param("rfp_base", 40, 0, 200, 30);
 Param rfp_margin = Param("rfp_margin", 150, 50, 300, 30);
 
 //klr: killers
-Param klr_bonus_0 = Param("klr_bonus_0", 882, 0, 1500, 80);
-Param klr_bonus_1 = Param("klr_bonus_1", 441, 0, 750, 40);
+Param klr_bonus_0 = Param("klr_bonus_0", 882, 0, 1500, 100);
+Param klr_bonus_1 = Param("klr_bonus_1", 441, 0, 750, 50);
 
 //spr: see pruning
 Param spr_quiet_threshold = Param("spr_quiet_threshold", 35, 0, 100, 10);
@@ -26,3 +26,4 @@ Param hsl_divisor = Param("hsl_divisor", 417, 200, 600, 50);
 
 //asp: aspiration windows
 Param asp_initial = Param("asp_initial", 20, 10, 60, 5);
+Param asp_multiplier = Param("asp_multiplier", 200, 110, 300, 10);

@@ -38,4 +38,6 @@ extern Param lmr_divisor;
 extern Param hsl_subtractor;
 extern Param hsl_divisor;
 extern Param asp_initial;
+extern Param asp_multiplier;
+
 #endif

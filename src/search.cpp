@@ -346,7 +346,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
                 asp_reduction = std::min(asp_reduction + 1, 4);
                 beta = std::min(score + delta, 20001);
             }
-            delta *= 2;
+            delta = delta * asp_multiplier / 100;
         }
         if (timer.stopped()) {
             if (!sd.pv_table[0][0].is_null()) {
