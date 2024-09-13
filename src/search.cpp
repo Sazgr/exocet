@@ -179,6 +179,12 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             return (abs(score) > 18000 ? beta : score);
         }
     }
+    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + 50 + 150 * depth * depth <= alpha) {
+        score = qsearch(position, ss, sd, alpha, beta);
+        if (score <= alpha) {
+            return score;
+        }
+    }
     if (in_check) ++depth;
     if (!is_pv && depth >= 6 && !(tt_hit && !entry.move().is_null())) depth--;
     position.generate_stage<all>(movelist);
