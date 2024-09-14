@@ -240,7 +240,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             if (movelist[i].captured() == 12 && !see(position, movelist[i], -spr_quiet_threshold * depth * depth)) continue;
         }
         int extension = 0;
-        if (movelist[i] == entry.move() && !is_root && depth >= 6 && (entry.type() == tt_exact || entry.type() == tt_beta) && abs(entry.score()) < 18000 && entry.depth() >= depth - 3) {
+        if (movelist[i] == entry.move() && !is_root && depth >= 6 + is_pv && (entry.type() == tt_exact || entry.type() == tt_beta) && abs(entry.score()) < 18000 && entry.depth() >= depth - 3) {
             int singular_beta = entry.score() - depth * sxt_margin / 16;
             int singular_depth = (depth - 1) / 2;
             ss->excluded = movelist[i];
