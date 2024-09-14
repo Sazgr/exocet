@@ -179,13 +179,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             return (abs(score) > 18000 ? beta : score);
         }
     }
-    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + 50 + 150 * depth * depth <= alpha) {
+    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + rzr_base + rzr_margin * depth * depth <= alpha) {
         score = qsearch(position, ss, sd, alpha, beta);
         if (score <= alpha) {
             return score;
         }
     }
-    int probcut_beta = beta + 300;
+    int probcut_beta = beta + pbc_margin;
     if (!is_pv && depth >= 4 && ss->excluded.is_null() && abs(beta) < 18000 && (!tt_hit || static_eval >= probcut_beta || entry.depth() < depth - 3)) {
         Movelist capture_list;
         position.generate_stage<noisy>(capture_list);
@@ -247,7 +247,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta, cutnode);
             ss->excluded = Move{};
             if (singular_score < singular_beta) {
-                if (!is_pv && singular_score < singular_beta - 100 && ss->double_extensions <= 4) {
+                if (!is_pv && singular_score < singular_beta - dxt_margin && ss->double_extensions <= 4) {
                     extension = 2;
                     ++ss->double_extensions;
                 } else {

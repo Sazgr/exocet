@@ -29,10 +29,14 @@ struct Param {
 
 extern Param rfp_base;
 extern Param rfp_margin;
+extern Param rzr_base;
+extern Param rzr_margin;
+extern Param pbc_margin;
 extern Param klr_bonus_0;
 extern Param klr_bonus_1;
 extern Param spr_quiet_threshold;
 extern Param sxt_margin;
+extern Param dxt_margin;
 extern Param lmr_base;
 extern Param lmr_divisor;
 extern Param hsl_subtractor;
