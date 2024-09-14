@@ -153,7 +153,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     }
     int static_eval = position.static_eval(*sd.nnue);
     if (tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= static_eval) || (entry.type() == tt_beta && entry.score() >= static_eval))) {
-        static_eval = std::clamp(entry.score(), -18000, 18000);
+        static_eval = std::clamp(entry.score(), -17999, 17999);
     }
     ss->static_eval = static_eval;
     int score = -20001;
