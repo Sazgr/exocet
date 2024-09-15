@@ -97,7 +97,7 @@ void Uci::handle_go(std::vector<std::string> tokens) {
         movetime -= move_overhead;
         movetime = std::max(1, movetime);
     }
-    timer.reset(calculate ? std::max(1, std::min(mytime * 3 / 4, 4 * movetime)) : movetime, calculate ? movetime : 0, nodes, 0, depth);
+    timer.reset(calculate ? std::min(mytime, std::max(movetime, std::min(mytime * 3 / 4, 4 * movetime))) : movetime, calculate ? movetime : 0, nodes, 0, depth);
     std::thread search_thread{search_root, std::ref(position), std::ref(timer), std::ref(sd), true};
     search_thread.detach();
 }
