@@ -8,7 +8,7 @@
 #include <thread>
 
 #ifndef VERSION
-#define VERSION "0.3.0-dev"
+#define VERSION "0.4.0-dev"
 #endif
 
 void Uci::handle_bench() {
