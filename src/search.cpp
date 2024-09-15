@@ -149,6 +149,13 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
     if (!is_pv && ss->excluded.is_null() && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
+        if (entry.score() >= beta && !entry.move().is_null() && entry.move().captured() == 12) {
+            sd.move_order->history_update(entry.move(), depth * depth);
+            sd.move_order->butterfly_update(entry.move(), depth * depth);
+            sd.move_order->continuation_update((ss - 2)->move, entry.move(), depth * depth);
+            sd.move_order->continuation_update((ss - 1)->move, entry.move(), depth * depth);
+            sd.move_order->killer_update(entry.move(), ss->ply);
+        }
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
