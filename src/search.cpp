@@ -172,7 +172,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ss->move = Move{};
         ++sd.nodes;
         (ss + 1)->ply = ss->ply + 1;
-        int r = 2 + depth / 4 + std::sqrt(static_eval - beta) / 12;
+        int r = 2 + depth / 4 + improving + std::sqrt(static_eval - beta) / 12;
         score = -search(position, ss + 1, sd, std::max(0, depth - 1 - r), -beta, -beta + 1, !cutnode);
         position.undo_null();
         if (!sd.timer->stopped() && score >= beta) {
