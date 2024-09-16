@@ -66,6 +66,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
+    static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
     int score = -20001;
     int best_score = -20001;
     if (!in_check) { //stand pat
@@ -117,6 +118,10 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
                 best_move = movelist[i];
                 tt_flag = tt_exact;
                 if (score > beta) {
+                    if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
+                        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+                        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
+                    }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, 0);
                     return score;
                 }
@@ -125,6 +130,10 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     }
     if (in_check && legal_moves == 0) {
         return -20000 + ss->ply;
+    }
+    if (!sd.timer->stopped() && !in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
+        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
     }
     if (!sd.timer->stopped()) {
         sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, 0);
@@ -152,6 +161,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         return std::clamp(entry.score(), -18000, 18000);
     }
     int static_eval = position.static_eval(*sd.nnue);
+    static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
     if (tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= static_eval) || (entry.type() == tt_beta && entry.score() >= static_eval))) {
         static_eval = std::clamp(entry.score(), -18000, 18000);
     }
@@ -320,6 +330,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     } else {
                         sd.move_order->caphist_update(best_move, depth * depth);
                     }
+                    if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
+                        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+                        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
+                    }
                     if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }
@@ -330,6 +344,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         sd.pv_table[ss->ply][0] = Move{};
         if (in_check) return -20000 + ss->ply;
         else return 0;
+    }
+    if (!sd.timer->stopped() && !in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
+        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+        sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
     }
     if (ss->excluded.is_null() && !sd.timer->stopped()) {
         sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, depth);
