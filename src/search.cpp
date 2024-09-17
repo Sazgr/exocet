@@ -272,6 +272,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             } else if (cutnode) {
                 extension = -1;
             }
+            if (extension < 0) cutnode = true;
         }
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
