@@ -65,8 +65,9 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     if (ss->excluded.is_null() && tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
         return std::clamp(entry.score(), -18000, 18000);
     }
-    int static_eval = position.static_eval(*sd.nnue);
-    static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
+    int static_eval = in_check ? -20001 : position.static_eval(*sd.nnue);
+    if (in_check) position.nnue_update_accumulator(*sd.nnue);
+    if (!in_check) static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
     int score = -20001;
     int best_score = -20001;
     if (!in_check) { //stand pat
@@ -160,8 +161,9 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     if (!is_pv && ss->excluded.is_null() && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
         return std::clamp(entry.score(), -18000, 18000);
     }
-    int static_eval = position.static_eval(*sd.nnue);
-    static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
+    int static_eval = in_check ? -20001 : position.static_eval(*sd.nnue);
+    if (in_check) position.nnue_update_accumulator(*sd.nnue);
+    if (!in_check) static_eval += sd.move_order->correction_value(position.pawn_hashkey(), position.side_to_move);
     if (tt_hit && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= static_eval) || (entry.type() == tt_beta && entry.score() >= static_eval))) {
         static_eval = std::clamp(entry.score(), -18000, 18000);
     }
