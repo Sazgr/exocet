@@ -265,6 +265,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 }
             } else if (singular_beta >= beta) {
                 return singular_beta;
+            } else if (entry.score() >= beta) {
+                extension = -1;
+            } else if (cutnode) {
+                extension = -1;
             }
         }
         position.make_move<true>(movelist[i], sd.nnue);
