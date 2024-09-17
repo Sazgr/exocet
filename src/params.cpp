@@ -2,6 +2,22 @@
 
 std::vector<Param*> params;
 
+//hst: history
+Param hst_gravity = Param("hst_gravity", 1024, 512, 2048, 80);
+
+//bfh: butterfly history
+Param bfh_gravity = Param("bfh_gravity", 1024, 512, 2048, 80);
+
+//cph: capture history
+Param cph_gravity = Param("cph_gravity", 1024, 512, 2048, 80);
+
+//cth: continuation history
+Param cth_gravity = Param("cth_gravity", 512, 256, 1024, 40);
+
+//crh: correction history
+Param crh_gravity = Param("crh_gravity", 256, 128, 512, 20);
+Param crh_limit = Param("crh_limit", 256, 128, 512, 20);
+
 //rfp: reverse futility pruning
 Param rfp_base = Param("rfp_base", 19, 0, 200, 20);
 Param rfp_margin = Param("rfp_margin", 128, 50, 200, 20);

@@ -350,7 +350,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         else return 0;
     }
     if (!sd.timer->stopped() && !in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
-        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+        int correction_diff = std::clamp<int>(best_score - static_eval, -crh_limit, crh_limit);
         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
     }
     if (ss->excluded.is_null() && !sd.timer->stopped()) {

@@ -2,6 +2,7 @@
 #define EXOCET_MOVE_ORDER
 
 #include "move.h"
+#include "params.h"
 #include <cstring>
 
 struct Move_order {
@@ -28,7 +29,7 @@ struct Move_order {
     }
 
     void history_update(Move move, int bonus) {
-        history[move.piece()][move.end()] += bonus - history[move.piece()][move.end()] * std::abs(bonus) / 1024;
+        history[move.piece()][move.end()] += bonus - history[move.piece()][move.end()] * std::abs(bonus) / hst_gravity;
     }
 
     int history_score(Move move) {
@@ -36,7 +37,7 @@ struct Move_order {
     }
 
     void butterfly_update(Move move, int bonus) {
-        butterfly[move.piece() & 1][move.start()][move.end()] += bonus - butterfly[move.piece() & 1][move.start()][move.end()] * std::abs(bonus) / 1024;
+        butterfly[move.piece() & 1][move.start()][move.end()] += bonus - butterfly[move.piece() & 1][move.start()][move.end()] * std::abs(bonus) / bfh_gravity;
     }
 
     int butterfly_score(Move move) {
@@ -44,7 +45,7 @@ struct Move_order {
     }
 
     void caphist_update(Move move, int bonus) {
-       caphist[move.captured()][move.piece()][move.end()] += bonus - caphist[move.captured()][move.piece()][move.end()] * std::abs(bonus) / 1024;
+       caphist[move.captured()][move.piece()][move.end()] += bonus - caphist[move.captured()][move.piece()][move.end()] * std::abs(bonus) / cph_gravity;
     }
 
     int caphist_score(Move move) {
@@ -54,7 +55,7 @@ struct Move_order {
     void continuation_update(Move previous, Move current, int bonus) {
         if (previous.is_null()) return;
         int index = previous.piece() * 64 * 12 * 64 + previous.end() * 12 * 64 + current.piece() * 64 + current.end();
-        continuation[index] += bonus - continuation[index] * std::abs(bonus) / 512;
+        continuation[index] += bonus - continuation[index] * std::abs(bonus) / cth_gravity;
     }
 
     int continuation_score(Move previous, Move current) {
@@ -74,7 +75,7 @@ struct Move_order {
     }
 
     void correction_update(u64 pawn_hash, bool side_to_move, int correction_diff, int bonus) {
-        correction[pawn_hash & 0xffffull][side_to_move] = ((256 - bonus) * correction[pawn_hash & 0xffffull][side_to_move] + bonus * correction_diff) / 256;
+        correction[pawn_hash & 0xffffull][side_to_move] = ((crh_gravity - bonus) * correction[pawn_hash & 0xffffull][side_to_move] + bonus * correction_diff) / crh_gravity;
     }
 
     int correction_value(u64 pawn_hash, bool side_to_move) {
