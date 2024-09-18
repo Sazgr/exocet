@@ -175,7 +175,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
-    bool improving = !in_check && ss->excluded.is_null() && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
+    bool improving = !in_check && ss->excluded.is_null() && ((ss - 2)->static_eval != -20001 ? ss->static_eval > (ss - 2)->static_eval : (ss - 4)->static_eval != -20001 ? ss->static_eval > (ss - 4)->static_eval : false);
     if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
         return static_eval;
     }
