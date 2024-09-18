@@ -270,7 +270,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             } else if (entry.score() >= beta) {
                 extension = -1;
             } else if (cutnode) {
-                extension = -1;
+                extension = -2;
             }
             if (extension < 0) cutnode = true;
         }
