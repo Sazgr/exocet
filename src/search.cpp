@@ -259,7 +259,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             int singular_score = search(position, ss, sd, singular_depth, singular_beta - 1, singular_beta, cutnode);
             ss->excluded = Move{};
             if (singular_score < singular_beta) {
-                if (!is_pv && singular_score < singular_beta - dxt_margin && ss->double_extensions <= 4) {
+                if (!is_pv && singular_score < singular_beta - dxt_margin && ss->double_extensions <= 6) {
                     extension = 2;
                     ++ss->double_extensions;
                 } else {
