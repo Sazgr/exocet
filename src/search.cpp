@@ -260,7 +260,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             ss->excluded = Move{};
             if (singular_score < singular_beta) {
                 if (!is_pv && singular_score < singular_beta - dxt_margin && ss->double_extensions <= 4) {
-                    extension = 2;
+                    extension = 2 + ((entry.move().is_null() || entry.move().captured() == 12) && singular_score < singular_beta - 450);
                     ++ss->double_extensions;
                 } else {
                     extension = 1;
