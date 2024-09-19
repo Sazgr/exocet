@@ -198,7 +198,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         }
     }
     int probcut_beta = beta + pbc_margin;
-    if (!is_pv && depth >= 4 && ss->excluded.is_null() && abs(beta) < 18000 && (!tt_hit || static_eval >= probcut_beta || entry.depth() < depth - 3)) {
+    if (!is_pv && depth >= 4 && ss->excluded.is_null() && abs(beta) < 18000 && (entry.move().is_null() || entry.move().captured() != 12) && (!tt_hit || static_eval >= probcut_beta || entry.depth() < depth - 3)) {
         Movelist capture_list;
         position.generate_stage<noisy>(capture_list);
         for (int i = 0; i < capture_list.size(); ++i) {
@@ -226,7 +226,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         }
     }
     if (in_check) ++depth;
-    if (!is_pv && depth >= 6 && !(tt_hit && !entry.move().is_null())) depth--;
+    if (depth >= 6 && !(tt_hit && !entry.move().is_null())) --depth;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
         if (tt_hit && movelist[i] == entry.move()) {
