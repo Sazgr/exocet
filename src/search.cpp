@@ -191,7 +191,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             return (abs(score) > 18000 ? beta : score);
         }
     }
-    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + rzr_base + rzr_margin * depth * depth <= alpha) {
+    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && alpha < 2000 && static_eval + rzr_base + rzr_margin * depth * depth <= alpha) {
         score = qsearch(position, ss, sd, alpha, beta);
         if (score <= alpha) {
             return score;
