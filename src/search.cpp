@@ -250,6 +250,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (!position.is_legal(movelist[i])) continue;
         if (!is_root && best_score > -18000) {
             if (movelist[i].captured() == 12 && !see(position, movelist[i], -spr_quiet_threshold * depth * depth)) continue;
+            if (movelist[i].captured() != 12 && !see(position, movelist[i], -274 - 200 * depth * depth)) continue;
         }
         int extension = 0;
         if (movelist[i] == entry.move() && !is_root && depth >= 6 && (entry.type() == tt_exact || entry.type() == tt_beta) && abs(entry.score()) < 18000 && entry.depth() >= depth - 3) {
