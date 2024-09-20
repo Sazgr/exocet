@@ -300,6 +300,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         } else {
             score = -search(position, ss + 1, sd, depth - 1 - reduction + extension, -alpha - 1, -alpha, true);
             if (score > alpha && reduction) {
+                bool deeper = score > best_score + 80 + 15 * depth;
+                extension += deeper;
                 score = -search(position, ss + 1, sd, depth - 1 + extension, -alpha - 1, -alpha, !cutnode);
             }
             if (score > alpha && is_pv) {
