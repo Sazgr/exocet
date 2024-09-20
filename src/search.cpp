@@ -95,7 +95,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
             if (tt_hit && movelist[i] == entry.move()) {
                 movelist[i].add_sortkey(30000);
             } else {
-                movelist[i].add_sortkey(10000 + movelist[i].mvv_lva());
+            movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]) + 4 * movelist[i].mvv_lva());
             }
         }
         movelist.sort(0, movelist.size());
@@ -119,6 +119,14 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
                 best_move = movelist[i];
                 tt_flag = tt_exact;
                 if (score > beta) {
+                    for (int j{0}; j<i; ++j) {
+                        if (movelist[j].captured() != 12) {
+                            sd.move_order->caphist_update(movelist[j], -1);
+                        }
+                    }
+                    if (best_move.captured() != 12) {
+                        sd.move_order->caphist_update(best_move, 1);
+                    }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
                         int correction_diff = std::clamp(best_score - static_eval, -256, 256);
                         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
@@ -322,22 +330,22 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
                         if (movelist[j].captured() == 12) {
-                            sd.move_order->history_update(movelist[j], -depth * depth);
-                            sd.move_order->butterfly_update(movelist[j], -depth * depth);
-                            sd.move_order->continuation_update((ss - 2)->move, movelist[j], -depth * depth);
-                            sd.move_order->continuation_update((ss - 1)->move, movelist[j], -depth * depth);
+                            sd.move_order->history_update(movelist[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->butterfly_update(movelist[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->continuation_update((ss - 2)->move, movelist[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->continuation_update((ss - 1)->move, movelist[j], -(depth + 1) * (depth + 1));
                         } else {
-                            sd.move_order->caphist_update(movelist[j], -depth * depth);
+                            sd.move_order->caphist_update(movelist[j], -(depth + 1) * (depth + 1));
                         }
                     }
                     if (best_move.captured() == 12) {
-                        sd.move_order->history_update(best_move, depth * depth);
-                        sd.move_order->butterfly_update(best_move, depth * depth);
-                        sd.move_order->continuation_update((ss - 2)->move, best_move, depth * depth);
-                        sd.move_order->continuation_update((ss - 1)->move, best_move, depth * depth);
+                        sd.move_order->history_update(best_move, (depth + 1) * (depth + 1));
+                        sd.move_order->butterfly_update(best_move, (depth + 1) * (depth + 1));
+                        sd.move_order->continuation_update((ss - 2)->move, best_move, (depth + 1) * (depth + 1));
+                        sd.move_order->continuation_update((ss - 1)->move, best_move, (depth + 1) * (depth + 1));
                         sd.move_order->killer_update(best_move, ss->ply);
                     } else {
-                        sd.move_order->caphist_update(best_move, depth * depth);
+                        sd.move_order->caphist_update(best_move, (depth + 1) * (depth + 1));
                     }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
                         int correction_diff = std::clamp(best_score - static_eval, -256, 256);
