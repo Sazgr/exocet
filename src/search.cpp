@@ -102,10 +102,14 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     }
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
-        if (!in_check && !see(position, movelist[i], -274)) continue;
+        if (!in_check && !see(position, movelist[i], -274)) continue; //eval + see < eval - alpha
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
+        if (!in_check && !gives_check && alpha - static_eval - 200 > -274 && !see(position, movelist[i], alpha - static_eval - 200)) {
+            position.undo_move<true>(movelist[i], sd.nnue);
+            continue;
+        }
         ++sd.nodes;
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
