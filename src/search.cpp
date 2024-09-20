@@ -277,6 +277,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
+        u64 prev_nodes = sd.nodes;
         if (depth < 8 && !in_check && !gives_check && legal_moves >= (4 + depth * depth) * (improving + 1)) {
             position.undo_move<true>(movelist[i], sd.nnue);
             break;
@@ -293,7 +294,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             if (movelist[i].captured() != 12) --reduction;
             if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - hsl_subtractor) / hsl_divisor, -2, 2);
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
-        } 
+        }
         if (legal_moves == 1) {
             score = -search(position, ss + 1, sd, depth - 1 + extension, -beta, -alpha, false);
         } else {
@@ -307,6 +308,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         }
         position.undo_move<true>(movelist[i], sd.nnue);
         if ((*sd.timer).stopped()) return 0;
+        if (is_root) sd.move_order->move_nodes[movelist[i].start()][movelist[i].end()] += sd.nodes - prev_nodes;
         if (score > best_score) {
             best_score = score;
              if (score > alpha) {
@@ -378,9 +380,16 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         best_move = movelist[i];
         break;
     }
+    for (int i{}; i < 64; ++i) {
+        for (int j{}; j < 64; ++j) {
+            sd.move_order->move_nodes[i][j] = 0;
+        }
+    }
     for (int depth = 1; depth < 64; ++depth) {
+        double time_scale = depth < 3 ? 1.0 : std::clamp((1.5 - static_cast<double>(sd.move_order->move_nodes[best_move.start()][best_move.end()]) / std::max<double>(sd.nodes, 1)) * 1.7, 0.7, 1.8);
+        std::cout << time_scale << '\n';
         if (timer.check(sd.nodes, depth)) break;
-        if (timer.check(sd.nodes, depth, true, 1.0)) break;
+        if (timer.check(sd.nodes, depth, true, time_scale)) break;
         int delta = asp_initial;
         int alpha = -20001;
         int beta = 20001;

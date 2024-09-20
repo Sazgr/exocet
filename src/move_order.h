@@ -12,6 +12,7 @@ struct Move_order {
     int* continuation;
     Move killer[128][2]{};
     int correction[65536][2]{};
+    u64 move_nodes[64][65]{};
 
     Move_order() {
         continuation = new int[12 * 64 * 12 * 64];
