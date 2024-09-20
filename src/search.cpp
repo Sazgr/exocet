@@ -386,8 +386,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         }
     }
     for (int depth = 1; depth < 64; ++depth) {
-        double time_scale = depth < 3 ? 1.0 : std::clamp((1.5 - static_cast<double>(sd.move_order->move_nodes[best_move.start()][best_move.end()]) / std::max<double>(sd.nodes, 1)) * 1.7, 0.7, 1.8);
-        std::cout << time_scale << '\n';
+        double time_scale = depth < 3 ? 1.0 : std::clamp(((ntm_base / 100.0) - static_cast<double>(sd.move_order->move_nodes[best_move.start()][best_move.end()]) / std::max<double>(sd.nodes, 1)) * (ntm_multiplier / 100.0), ntm_minimum / 100.0, ntm_maximum / 100.0);
         if (timer.check(sd.nodes, depth)) break;
         if (timer.check(sd.nodes, depth, true, time_scale)) break;
         int delta = asp_initial;

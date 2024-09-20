@@ -12,7 +12,7 @@ Param bfh_gravity = Param("bfh_gravity", 882, 512, 2048, 80);
 Param cph_gravity = Param("cph_gravity", 932, 512, 2048, 80);
 
 //cth: continuation history
-Param cth_gravity = Param("cth_gravity", 588, 256, 1024, 40);
+Param cth_gravity = Param("cth_gravity", 588, 256, 1024, 50);
 
 //crh: correction history
 Param crh_gravity = Param("crh_gravity", 207, 128, 512, 20);
@@ -23,7 +23,7 @@ Param rfp_base = Param("rfp_base", 31, 0, 200, 20);
 Param rfp_margin = Param("rfp_margin", 110, 50, 200, 20);
 
 //rzr: razoring
-Param rzr_base = Param("rzr_base", 31, 0, 100, 15);
+Param rzr_base = Param("rzr_base", 31, 0, 100, 10);
 Param rzr_margin = Param("rzr_margin", 200, 50, 250, 40);
 
 //pbc: probcut
@@ -37,10 +37,10 @@ Param klr_bonus_1 = Param("klr_bonus_1", 452, 0, 750, 40);
 Param spr_quiet_threshold = Param("spr_quiet_threshold", 32, 0, 100, 8);
 
 //sxt: singular extensions
-Param sxt_margin = Param("sxt_margin", 44, 16, 128, 10);
+Param sxt_margin = Param("sxt_margin", 44, 16, 128, 8);
 
 //dxt: double extensions
-Param dxt_margin = Param("dxt_margin", 23, 20, 200, 20);
+Param dxt_margin = Param("dxt_margin", 23, 5, 100, 5);
 
 //lmr: late move reductions
 Param lmr_base = Param("lmr_base", 95, 0, 100, 20);
@@ -49,6 +49,12 @@ Param lmr_divisor = Param("lmr_divisor", 227, 100, 300, 20);
 //hsl: history lmr
 Param hsl_subtractor = Param("hsl_subtractor", 14932, 12500, 17500, 100);
 Param hsl_divisor = Param("hsl_divisor", 338, 200, 600, 50);
+
+//ntm: node time management
+Param ntm_base = Param("ntm_base", 150, 100, 200, 10);
+Param ntm_multiplier = Param("ntm_multiplier", 170, 100, 250, 15);
+Param ntm_minimum = Param("ntm_minimum", 70, 0, 150, 10);
+Param ntm_maximum = Param("ntm_maximum", 180, 100, 250, 15);
 
 //asp: aspiration windows
 Param asp_initial = Param("asp_initial", 17, 10, 60, 3);

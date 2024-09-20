@@ -47,6 +47,10 @@ extern Param lmr_base;
 extern Param lmr_divisor;
 extern Param hsl_subtractor;
 extern Param hsl_divisor;
+extern Param ntm_base;
+extern Param ntm_multiplier;
+extern Param ntm_minimum;
+extern Param ntm_maximum;
 extern Param asp_initial;
 extern Param asp_multiplier;
 
