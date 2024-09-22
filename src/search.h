@@ -28,6 +28,7 @@ struct Search_data {
 };
 
 const int see_value[7] = {256, 768, 768, 1280, 2304, 20000, 0};
+const double best_move_stability[5] = {2.05, 1.20, 1.00, 0.90, 0.85};
 extern int lmr_table[256][256];
 
 inline void fill_lmr_table() {

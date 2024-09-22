@@ -380,6 +380,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
     sd.nnue = &nnue;
     sd.timer = &timer;
     int score;
+    int stability = 0;
     Move best_move = Move{};
     Movelist movelist;
     position.generate_stage<all>(movelist);
@@ -394,7 +395,9 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         }
     }
     for (int depth = 1; depth < 64; ++depth) {
-        double time_scale = depth < 3 ? 1.0 : std::clamp(((ntm_base / 100.0) - static_cast<double>(sd.move_order->move_nodes[best_move.start()][best_move.end()]) / std::max<double>(sd.nodes, 1)) * (ntm_multiplier / 100.0), ntm_minimum / 100.0, ntm_maximum / 100.0);
+        double node_time_scale = depth < 3 ? 1.0 : std::clamp(((ntm_base / 100.0) - static_cast<double>(sd.move_order->move_nodes[best_move.start()][best_move.end()]) / std::max<double>(sd.nodes, 1)) * (ntm_multiplier / 100.0), ntm_minimum / 100.0, ntm_maximum / 100.0);
+        double best_move_time_scale = best_move_stability[stability];
+        double time_scale = node_time_scale * best_move_time_scale;
         if (timer.check(sd.nodes, depth)) break;
         if (timer.check(sd.nodes, depth, true, time_scale)) break;
         int delta = asp_initial;
@@ -411,6 +414,11 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
                 break;
             }
             if (score > alpha && score < beta) {
+                if (sd.pv_table[0][0] == best_move) {
+                    stability = std::min(stability + 1, 4);
+                } else {
+                    stability = 0;
+                }
                 break;
             }
             if (score <= alpha) {
