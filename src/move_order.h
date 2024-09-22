@@ -11,7 +11,9 @@ struct Move_order {
     int caphist[13][12][64]{};
     int* continuation;
     Move killer[128][2]{};
-    int correction[65536][2]{};
+    int pawn_correction[65536][2]{};
+    int minor_correction[65536][2]{};
+    int major_correction[65536][2]{};
     u64 move_nodes[64][65]{};
 
     Move_order() {
@@ -75,12 +77,14 @@ struct Move_order {
         return killer[ply][index];
     }
 
-    void correction_update(u64 pawn_hash, bool side_to_move, int correction_diff, int bonus) {
-        correction[pawn_hash & 0xffffull][side_to_move] = ((crh_gravity - bonus) * correction[pawn_hash & 0xffffull][side_to_move] + bonus * correction_diff) / crh_gravity;
+    void correction_update(u64 corrhist_hash, bool side_to_move, int correction_diff, int bonus) {
+        pawn_correction[corrhist_hash & 0xffffull][side_to_move] = ((crh_gravity - bonus) * pawn_correction[corrhist_hash & 0xffffull][side_to_move] + bonus * correction_diff) / crh_gravity;
+        minor_correction[(corrhist_hash >> 16) & 0xffffull][side_to_move] = ((crh_gravity - bonus) * minor_correction[(corrhist_hash >> 16) & 0xffffull][side_to_move] + bonus * correction_diff) / crh_gravity;
+        major_correction[(corrhist_hash >> 32) & 0xffffull][side_to_move] = ((crh_gravity - bonus) * major_correction[(corrhist_hash >> 32) & 0xffffull][side_to_move] + bonus * correction_diff) / crh_gravity;
     }
 
-    int correction_value(u64 pawn_hash, bool side_to_move) {
-        return correction[pawn_hash & 0xffffull][side_to_move];
+    int correction_value(u64 corrhist_hash, bool side_to_move) {
+        return (200 * pawn_correction[corrhist_hash & 0xffffull][side_to_move] + 200 * minor_correction[(corrhist_hash >> 16) & 0xffffull][side_to_move] + 200 * major_correction[(corrhist_hash >> 32) & 0xffffull][side_to_move]) / 400;
     }
 };
 

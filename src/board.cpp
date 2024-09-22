@@ -272,7 +272,7 @@ template void Position::generate_stage<all>(Movelist& movelist);
 template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq];
-        pawn_hash[ply] ^= zobrist_pawn[board[sq]][sq];
+        corrhist_hash[ply] ^= zobrist_corrhist[board[sq]][sq];
     }
     if constexpr (update_nnue) {
         if (board[sq] != empty_square) nnue_sub.push_back({index(board[sq], sq, 0, king_square[0]), index(board[sq], sq, 1, king_square[1])});
@@ -285,7 +285,7 @@ template <bool update_nnue, bool update_hash> void Position::remove_piece(int sq
 template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, int piece) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[piece][sq];
-        pawn_hash[ply] ^= zobrist_pawn[piece][sq];
+        corrhist_hash[ply] ^= zobrist_corrhist[piece][sq];
     }
     if constexpr (update_nnue) {
         if (piece != empty_square) nnue_add.push_back({index(piece, sq, 0, king_square[0]), index(piece, sq, 1, king_square[1])});
@@ -298,7 +298,7 @@ template <bool update_nnue, bool update_hash> void Position::add_piece(int sq, i
 template <bool update_nnue, bool update_hash> void Position::remove_add_piece(int sq, int piece) {
     if constexpr (update_hash) {
         hash[ply] ^= zobrist_pieces[board[sq]][sq] ^ zobrist_pieces[piece][sq];
-        pawn_hash[ply] ^= zobrist_pawn[board[sq]][sq] ^ zobrist_pawn[piece][sq];
+        corrhist_hash[ply] ^= zobrist_corrhist[board[sq]][sq] ^ zobrist_corrhist[piece][sq];
     }
     if constexpr (update_nnue) {
         if (board[sq] != empty_square) nnue_sub.push_back({index(board[sq], sq, 0, king_square[0]), index(board[sq], sq, 1, king_square[1])});
@@ -316,7 +316,7 @@ template <bool update_nnue> void Position::make_move(Move move, NNUE* nnue) {
     }
     ++ply;
     hash[ply] = hash[ply - 1];
-    pawn_hash[ply] = pawn_hash[ply - 1];
+    corrhist_hash[ply] = corrhist_hash[ply - 1];
     hash[ply] ^= zobrist_black;
     int start = move.start();
     int end = move.end();
@@ -509,16 +509,16 @@ void Position::recalculate_zobrist() {
     }
     hash[ply] ^= zobrist_enpassant[enpassant_square[ply]];
 
-    pawn_hash[ply] = 0;
-    for (int i{0}; i < 64; ++i) pawn_hash[ply] ^= zobrist_pawn[board[i]][i];
+    corrhist_hash[ply] = 0;
+    for (int i{0}; i < 64; ++i) corrhist_hash[ply] ^= zobrist_corrhist[board[i]][i];
 }
 
 u64 Position::hashkey() {
     return hash[ply];
 }
 
-u64 Position::pawn_hashkey() {
-    return pawn_hash[ply];
+u64 Position::corrhist_hashkey() {
+    return corrhist_hash[ply];
 }
 
 bool Position::load_fen(std::string fen_pos, std::string fen_stm, std::string fen_castling, std::string fen_ep, std::string fen_hmove_clock, std::string fen_fmove_counter) {
