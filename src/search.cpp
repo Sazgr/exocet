@@ -128,7 +128,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
                         sd.move_order->caphist_update(best_move, 1);
                     }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
-                        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+                        int correction_diff = std::clamp<int>(best_score - static_eval, -crh_limit, crh_limit);
                         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
                     }
                     sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, 0);
@@ -141,7 +141,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
         return -20000 + ss->ply;
     }
     if (!sd.timer->stopped() && !in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
-        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+        int correction_diff = std::clamp<int>(best_score - static_eval, -crh_limit, crh_limit);
         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
     }
     if (!sd.timer->stopped()) {
@@ -348,7 +348,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                         sd.move_order->caphist_update(best_move, (depth + 1) * (depth + 1));
                     }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
-                        int correction_diff = std::clamp(best_score - static_eval, -256, 256);
+                        int correction_diff = std::clamp<int>(best_score - static_eval, -crh_limit, crh_limit);
                         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, std::min(depth + 1, 16));
                     }
                     if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
