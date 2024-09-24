@@ -290,6 +290,12 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             position.undo_move<true>(movelist[i], sd.nnue);
             break;
         }
+        int futility_value = static_eval + 50 + 100 * depth;
+        if (depth < 8 && !in_check && !gives_check && best_score > -18000 && futility_value <= alpha) {
+            if (best_score < futility_value && abs(best_score) < 18000 && abs(futility_value) < 18000) best_score = futility_value;
+            position.undo_move<true>(movelist[i], sd.nnue);
+            continue;
+        }
         ++sd.nodes;
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
