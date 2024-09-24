@@ -205,7 +205,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             return score;
         }
     }
-    int probcut_beta = beta + pbc_margin;
+    int probcut_beta = beta + pbc_margin - 50 * improving;
     if (!is_pv && depth >= 4 && ss->excluded.is_null() && abs(beta) < 18000 && (!tt_hit || static_eval >= probcut_beta || entry.depth() < depth - 3)) {
         Movelist capture_list;
         position.generate_stage<noisy>(capture_list);
