@@ -42,6 +42,11 @@ Param sxt_margin = Param("sxt_margin", 37, 16, 128, 8);
 //dxt: double extensions
 Param dxt_margin = Param("dxt_margin", 19, 5, 100, 5);
 
+//lmp: late move pruning
+Param lmp_base = Param("lmp_base", 400, 200, 800, 40);
+Param lmp_margin = Param("lmp_margin", 200, 100, 400, 20);
+Param lmp_improving = Param("lmp_improving", 200, 100, 400, 20);
+
 //lmr: late move reductions
 Param lmr_base = Param("lmr_base", 44, 0, 100, 20);
 Param lmr_divisor = Param("lmr_divisor", 206, 100, 300, 20);

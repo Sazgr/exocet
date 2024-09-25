@@ -286,7 +286,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ss->move = movelist[i];
         bool gives_check = position.check();
         u64 prev_nodes = sd.nodes;
-        if (depth < 8 && !in_check && !gives_check && best_score > -18000 && legal_moves >= (2 + depth * depth) * (improving + 1)) {
+        if (depth < 8 && !in_check && !gives_check && best_score > -18000 && legal_moves >= static_cast<int>(((lmp_base / 100.0) + (lmp_margin / 100.0) * depth * depth) / ((lmp_improving / 100.0) - improving))) {
             position.undo_move<true>(movelist[i], sd.nnue);
             break;
         }
