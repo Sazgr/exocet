@@ -187,7 +187,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
         return static_eval;
     }
-    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
+    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta + 100 - 15 * depth) {
         position.make_null();
         ss->move = Move{};
         ++sd.nodes;
