@@ -199,40 +199,6 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             return (abs(score) > 18000 ? beta : score);
         }
     }
-    if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + rzr_base + rzr_margin * depth * depth <= alpha) {
-        score = qsearch(position, ss, sd, alpha, beta);
-        if (score <= alpha) {
-            return score;
-        }
-    }
-    int probcut_beta = beta + pbc_margin;
-    if (!is_pv && depth >= 4 && ss->excluded.is_null() && abs(beta) < 18000 && (!tt_hit || static_eval >= probcut_beta || entry.depth() < depth - 3)) {
-        Movelist capture_list;
-        position.generate_stage<noisy>(capture_list);
-        for (int i = 0; i < capture_list.size(); ++i) {
-            capture_list[i].add_sortkey(capture_list[i].mvv_lva());
-        }
-        capture_list.sort(0, capture_list.size());
-        int probcut_result = 0;
-        for (int i = 0; i < capture_list.size(); ++i) {
-            if (capture_list[i] == entry.move()) continue;
-            if (!position.is_legal(capture_list[i])) continue;
-            if (!see(position, capture_list[i], 1)) continue;
-            ss->move = capture_list[i];
-            ++sd.nodes;
-            (ss + 1)->ply = ss->ply + 1;
-            position.make_move<true>(capture_list[i], sd.nnue);
-            probcut_result = -qsearch(position, ss + 1, sd, -probcut_beta, -probcut_beta + 1);
-            if (probcut_result >= probcut_beta) {
-                probcut_result = -search(position, ss + 1, sd, depth - 4, -probcut_beta, -probcut_beta + 1, !cutnode);
-            }
-            position.undo_move<true>(capture_list[i], sd.nnue);
-            if (probcut_result >= probcut_beta) {
-                sd.hash_table->insert(position.hashkey(), probcut_result, tt_beta, capture_list[i], depth - 3);
-                return probcut_result;
-            }
-        }
-    }
     if (in_check) ++depth;
     if (!is_pv && depth >= 6 && !(tt_hit && !entry.move().is_null())) depth--;
     position.generate_stage<all>(movelist);
