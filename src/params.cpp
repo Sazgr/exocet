@@ -3,28 +3,28 @@
 std::vector<Param*> params;
 
 //hst: history
-Param hst_gravity = Param("hst_gravity", 555, 512, 2048, 80);
+Param hst_gravity = Param("hst_gravity", 555, 256, 2048, 50);
 
 //bfh: butterfly history
-Param bfh_gravity = Param("bfh_gravity", 596, 512, 2048, 80);
+Param bfh_gravity = Param("bfh_gravity", 596, 256, 2048, 50);
 
 //cph: capture history
-Param cph_gravity = Param("cph_gravity", 819, 512, 2048, 80);
+Param cph_gravity = Param("cph_gravity", 819, 256, 2048, 80);
 
 //cth: continuation history
 Param cth_gravity = Param("cth_gravity", 719, 256, 1024, 50);
 
 //crh: correction history
-Param crh_gravity = Param("crh_gravity", 134, 128, 512, 20);
+Param crh_gravity = Param("crh_gravity", 134, 64, 512, 10);
 Param crh_limit = Param("crh_limit", 256, 128, 512, 20);
 
 //rfp: reverse futility pruning
-Param rfp_base = Param("rfp_base", 11, 0, 200, 20);
-Param rfp_margin = Param("rfp_margin", 89, 50, 200, 20);
+Param rfp_base = Param("rfp_base", 11, 0, 100, 10);
+Param rfp_margin = Param("rfp_margin", 89, 50, 200, 10);
 
 //rzr: razoring
 Param rzr_base = Param("rzr_base", 46, 0, 100, 10);
-Param rzr_margin = Param("rzr_margin", 201, 50, 250, 40);
+Param rzr_margin = Param("rzr_margin", 201, 50, 250, 30);
 
 //pbc: probcut
 Param pbc_margin = Param("pbc_margin", 242, 150, 450, 30);
@@ -48,12 +48,12 @@ Param lmp_margin = Param("lmp_margin", 169, 100, 400, 20);
 Param lmp_improving = Param("lmp_improving", 191, 100, 400, 20);
 
 //lmr: late move reductions
-Param lmr_base = Param("lmr_base", 16, 0, 100, 20);
+Param lmr_base = Param("lmr_base", 16, -100, 100, 20);
 Param lmr_divisor = Param("lmr_divisor", 208, 100, 300, 20);
 
 //hsl: history lmr
 Param hsl_subtractor = Param("hsl_subtractor", 14849, 12500, 17500, 100);
-Param hsl_divisor = Param("hsl_divisor", 227, 200, 600, 50);
+Param hsl_divisor = Param("hsl_divisor", 227, 100, 600, 30);
 
 //ntm: node time management
 Param ntm_base = Param("ntm_base", 147, 100, 200, 10);
