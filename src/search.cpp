@@ -247,8 +247,6 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             sort_score += sd.move_order->butterfly_score(movelist[i]) / 2;
             sort_score += sd.move_order->continuation_score((ss - 2)->move, movelist[i]) / 2;
             sort_score += sd.move_order->continuation_score((ss - 1)->move, movelist[i]) / 2;
-            if (movelist[i] == sd.move_order->killer_move(ss->ply, 0)) sort_score += klr_bonus_0;
-            if (movelist[i] == sd.move_order->killer_move(ss->ply, 1)) sort_score += klr_bonus_1;
             movelist[i].add_sortkey(sort_score);
         }
     }
