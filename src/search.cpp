@@ -187,18 +187,6 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     if (depth < 4 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
         return static_eval;
     }
-    if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
-        position.make_null();
-        ss->move = Move{};
-        ++sd.nodes;
-        (ss + 1)->ply = ss->ply + 1;
-        int r = 2 + depth / 4 + improving + std::sqrt(static_eval - beta) / 12;
-        score = -search(position, ss + 1, sd, std::max(0, depth - 1 - r), -beta, -beta + 1, !cutnode);
-        position.undo_null();
-        if (!sd.timer->stopped() && score >= beta) {
-            return (abs(score) > 18000 ? beta : score);
-        }
-    }
     if (depth < 4 && !is_pv && !in_check && ss->excluded.is_null() && static_eval + rzr_base + rzr_margin * depth * depth <= alpha) {
         score = qsearch(position, ss, sd, alpha, beta);
         if (score <= alpha) {
