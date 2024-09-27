@@ -58,6 +58,7 @@ bool see(Position& position, Move move, const int threshold) {
 }
 
 int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, int beta) {
+    return position.static_eval(*sd.nnue);
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
     bool in_check = position.check();
     Entry entry = sd.hash_table->probe(position.hashkey());
