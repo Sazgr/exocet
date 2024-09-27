@@ -79,30 +79,18 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     Move best_move{};
     Movelist movelist;
     int tt_flag = tt_alpha;
-    if (in_check) {
-        position.generate_stage<all>(movelist);
-        for (int i{}; i < movelist.size(); ++i) {
-            if (tt_hit && movelist[i] == entry.move()) {
-                movelist[i].add_sortkey(30000);
-            } else {
-                movelist[i].add_sortkey(0);
-            }
-        }
-        movelist.sort(0, movelist.size());
-    } else {
-        position.generate_stage<noisy>(movelist);
-        for (int i{}; i < movelist.size(); ++i) {
-            if (tt_hit && movelist[i] == entry.move()) {
-                movelist[i].add_sortkey(30000);
-            } else {
+    position.generate_stage<noisy>(movelist);
+    for (int i{}; i < movelist.size(); ++i) {
+        if (tt_hit && movelist[i] == entry.move()) {
+            movelist[i].add_sortkey(30000);
+        } else {
             movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]) + 4 * movelist[i].mvv_lva());
-            }
         }
-        movelist.sort(0, movelist.size());
     }
+    movelist.sort(0, movelist.size());
     for (int i{}; i < movelist.size(); ++i) {
         if (!position.is_legal(movelist[i])) continue;
-        if (!in_check && !see(position, movelist[i], -274)) continue;
+        if (!see(position, movelist[i], -274)) continue;
         position.make_move<true>(movelist[i], sd.nnue);
         ss->move = movelist[i];
         bool gives_check = position.check();
@@ -154,16 +142,17 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     sd.hash_table->prefetch(position.hashkey());
     bool is_root = (ss->ply == 0);
     bool is_pv = (beta - alpha) != 1;
+    bool in_check = position.check();
     if ((*sd.timer).stopped() || (!(sd.nodes & 4095) && (*sd.timer).check(sd.nodes, 0))) return 0;
-    if (depth <= 0) {
+    if (depth <= 0 && !in_check) {
         return qsearch(position, ss, sd, alpha, beta);
     }
+    if (depth < 0) depth = 0;
     if (depth == 1 && is_pv) sd.pv_table[ss->ply + 1][0] = Move{};
     if (position.draw(ss->ply > 2 ? 1 : 2)) {
         sd.pv_table[ss->ply][0] = Move{};
         return 0;
     }
-    bool in_check = position.check();
     Entry entry = sd.hash_table->probe(position.hashkey());
     bool tt_hit = entry.type() != tt_none && entry.full_hash == position.hashkey();
     if (!is_pv && ss->excluded.is_null() && tt_hit && entry.depth() >= depth && (entry.type() == tt_exact || (entry.type() == tt_alpha && entry.score() <= alpha) || (entry.type() == tt_beta && entry.score() >= beta))) {
