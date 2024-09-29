@@ -384,7 +384,7 @@ template <bool update_nnue> void Position::make_move(Move move, NNUE* nnue) {
     }
     hash[ply] ^= zobrist_enpassant[enpassant_square[ply - 1]] ^ zobrist_enpassant[enpassant_square[ply]];
     nnue_refresh = 0;
-    if constexpr (update_nnue) if (piece == black_king + side_to_move && (((start ^ king_end) & 4) || (buckets > 1 && king_buckets[start ^ (56 * side_to_move)] != king_buckets[king_end ^ (56 * side_to_move)]))) {
+    if constexpr (update_nnue) if (piece == black_king + side_to_move && (((start ^ king_end) & 4) || (input_buckets > 1 && king_buckets[start ^ (56 * side_to_move)] != king_buckets[king_end ^ (56 * side_to_move)]))) {
         nnue_refresh = 1 + side_to_move;
     }
     king_square[0] = get_lsb(pieces[10]);
@@ -497,7 +497,9 @@ void Position::nnue_update_accumulator(NNUE& nnue) {
 
 int Position::static_eval(NNUE& nnue) {
     nnue_update_accumulator(nnue);
-    return nnue.evaluate(side_to_move);
+    int output_bucket = popcount(pieces[2] | pieces[3] | pieces[4] | pieces[5]) + 2 * popcount(pieces[6] | pieces[7]) + 4 * popcount(pieces[8] | pieces[9]) - 1;
+    output_bucket = std::clamp(output_bucket / 4, 0, output_buckets - 1);
+    return nnue.evaluate(side_to_move, output_bucket);
 }
 
 void Position::recalculate_zobrist() {

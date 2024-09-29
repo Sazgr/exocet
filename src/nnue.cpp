@@ -24,7 +24,7 @@ INCBIN(eval, NETWORK_FILE);
 #ifdef SIMD
 alignas(ALIGNMENT) std::array<i16, input_size * hidden_size> input_weights;
 alignas(ALIGNMENT) std::array<i16, hidden_size> input_bias;
-alignas(ALIGNMENT) std::array<i16, hidden_dsize> hidden_weights;
+alignas(ALIGNMENT) std::array<i16, hidden_dsize * output_size> hidden_weights;
 alignas(ALIGNMENT) std::array<i32, output_size> hidden_bias;
 #else
 std::array<i16, input_size * hidden_size> input_weights;
@@ -210,7 +210,7 @@ void NNUE::refresh_side(int side, Position& position) {
     }
 }
 
-i32 NNUE::evaluate(bool side) {
+i32 NNUE::evaluate(bool side, int output_bucket) {
     Accumulator &accumulator = accumulator_stack[current_accumulator];
 #ifdef SIMD
     const register_type screlu_min{};
@@ -218,7 +218,7 @@ i32 NNUE::evaluate(bool side) {
     register_type res{};
     const register_type* accumulator_us = reinterpret_cast<register_type*>(accumulator[side].data());
     const register_type* accumulator_them = reinterpret_cast<register_type*>(accumulator[!side].data());
-    const register_type* weights = reinterpret_cast<register_type*>(hidden_weights.data());
+    const register_type* weights = reinterpret_cast<register_type*>(hidden_weights.data() + output_bucket * hidden_size * 2);
     for (int i = 0; i < hidden_size / I16_STRIDE; ++i) {
         const register_type clipped = register_min_16(register_max_16(accumulator_us[i], screlu_min), screlu_max);
         res = register_add_32(res, register_madd_16(register_mul_16(clipped, clipped), weights[i]));
@@ -227,14 +227,14 @@ i32 NNUE::evaluate(bool side) {
         const register_type clipped = register_min_16(register_max_16(accumulator_them[i], screlu_min), screlu_max);
         res = register_add_32(res, register_madd_16(register_mul_16(clipped, clipped), weights[i + hidden_size / I16_STRIDE]));
     }
-    i32 output = register_sum_32(res) + (hidden_bias[0] * input_quantization);
+    i32 output = register_sum_32(res) + (hidden_bias[output_bucket] * input_quantization);
 #else
-    i32 output = hidden_bias[0] * input_quantization;
+    i32 output = hidden_bias[output_bucket] * input_quantization;
     for (int i = 0; i < hidden_size; ++i) {
-        output += screlu(accumulator[side][i]) * hidden_weights[i];
+        output += screlu(accumulator[side][i]) * hidden_weights[output_bucket * hidden_size * 2 + i];
     }
     for (int i = 0; i < hidden_size; ++i) {
-        output += screlu(accumulator[!side][i]) * hidden_weights[hidden_size + i];
+        output += screlu(accumulator[!side][i]) * hidden_weights[output_bucket * hidden_size * 2 + hidden_size + i];
     }
 #endif
     return (output / input_quantization * 400) / input_quantization / hidden_quantization;

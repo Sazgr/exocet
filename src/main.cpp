@@ -46,7 +46,9 @@ int main(int argc, char *argv[]) {
             std::cout << uci.position << '\n';
             NNUE nnue;
             nnue.refresh(uci.position);
-            std::cout << "NNUE: " << nnue.evaluate(uci.position.side_to_move) << std::endl;
+            for (int i{}; i < output_buckets; ++i) {
+                std::cout << "NNUE bucket " << i << ": " << nnue.evaluate(uci.position.side_to_move, i) << std::endl;
+            }
         }
         if (tokens[0] == "go") {
             uci.handle_go(tokens);

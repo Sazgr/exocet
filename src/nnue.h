@@ -8,17 +8,18 @@
 #include <cstring>
 #include <string>
 
-constexpr int buckets = 8;
-constexpr int input_size = 12 * 64 * buckets;
+constexpr int input_buckets = 8;
+constexpr int output_buckets = 6;
+constexpr int input_size = 12 * 64 * input_buckets;
 constexpr int hidden_size = 512;
 constexpr int hidden_dsize = hidden_size * 2;
-constexpr int output_size = 1;
+constexpr int output_size = 1 * output_buckets;
 constexpr int input_quantization = 181;
 constexpr int hidden_quantization = 128;
 
 extern std::array<i16, input_size * hidden_size> input_weights;
 extern std::array<i16, hidden_size> input_bias;
-extern std::array<i16, hidden_dsize> hidden_weights;
+extern std::array<i16, hidden_dsize * output_size> hidden_weights;
 extern std::array<i32, output_size> hidden_bias;
 
 const int king_buckets[64] {
@@ -33,7 +34,7 @@ const int king_buckets[64] {
 };
 
 static inline int king_bucket(int king_square, bool king_color) {
-    if constexpr (buckets > 1) {
+    if constexpr (input_buckets > 1) {
         king_square ^= 56;
         king_square = (56 * king_color) ^ king_square;
         return king_buckets[king_square];
@@ -105,7 +106,7 @@ public:
     template <bool add, int side> void update_accumulator_side(int piece, int square, int black_king_square, int white_king_square);
     void update_accumulator_sub_add(u64 sides, std::array<int, 2> sub, std::array<int, 2> add);
     void update_accumulator_sub_sub_add(u64 sides, std::array<int, 2> sub1, std::array<int, 2> sub2, std::array<int, 2> add);
-    i32 evaluate(bool side);
+    i32 evaluate(bool side, int output_bucket);
 };
 
 void load_default();
