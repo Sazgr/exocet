@@ -233,7 +233,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             }
         }
     }
-    if (in_check) ++depth;
+    if (!is_pv && in_check) ++depth;
     if (!is_pv && depth >= 6 && !(tt_hit && !entry.move().is_null())) depth--;
     position.generate_stage<all>(movelist);
     for (int i{}; i < movelist.size(); ++i) {
