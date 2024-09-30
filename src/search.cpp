@@ -403,10 +403,6 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
         int delta = asp_initial;
         int alpha = -20001;
         int beta = 20001;
-        if (depth >= 2) {
-            alpha = std::max(score - delta, -20001);
-            beta = std::min(score + delta,  20001);
-        }
         int asp_reduction{};
         while (!timer.stopped()) {
             score = search(position, &ss[4], sd, std::max(depth - asp_reduction, 1), alpha, beta, false);
