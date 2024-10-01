@@ -95,7 +95,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
             if (tt_hit && movelist[i] == entry.move()) {
                 movelist[i].add_sortkey(30000);
             } else {
-            movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]) + 4 * movelist[i].mvv_lva());
+            movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]) + movelist[i].mvv_lva());
             }
         }
         movelist.sort(0, movelist.size());
@@ -240,7 +240,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (tt_hit && movelist[i] == entry.move()) {
             movelist[i].add_sortkey(30000);
         } else if (movelist[i].captured() != 12) {
-            movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]) + 4 * movelist[i].mvv_lva());
+            movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]) + movelist[i].mvv_lva());
         } else {
             int sort_score = 15000;
             sort_score += sd.move_order->history_score(movelist[i]) / 2;
