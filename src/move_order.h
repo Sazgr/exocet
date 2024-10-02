@@ -9,6 +9,7 @@ struct Move_order {
     int history[12][64]{};
     int butterfly[2][64][64]{};
     int caphist[13][12][64]{};
+    int small_caphist[13][64]{};
     int* continuation;
     Move killer[128][2]{};
     int correction[65536][2]{};
@@ -51,6 +52,14 @@ struct Move_order {
 
     int caphist_score(Move move) {
         return caphist[move.captured()][move.piece()][move.end()];
+    }
+
+    void small_caphist_update(Move move, int bonus) {
+        small_caphist[move.captured()][move.end()] += bonus - small_caphist[move.captured()][move.end()] * std::abs(bonus) / sch_gravity;
+    }
+
+    int small_caphist_score(Move move) {
+        return small_caphist[move.captured()][move.end()];
     }
 
     void continuation_update(Move previous, Move current, int bonus) {

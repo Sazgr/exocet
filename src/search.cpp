@@ -95,7 +95,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
             if (tt_hit && movelist[i] == entry.move()) {
                 movelist[i].add_sortkey(30000);
             } else {
-            movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]));
+            movelist[i].add_sortkey(10000 + sd.move_order->caphist_score(movelist[i]) + sd.move_order->small_caphist_score(movelist[i]));
             }
         }
         movelist.sort(0, movelist.size());
@@ -122,10 +122,12 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
                     for (int j{0}; j<i; ++j) {
                         if (movelist[j].captured() != 12) {
                             sd.move_order->caphist_update(movelist[j], -1);
+                            sd.move_order->small_caphist_update(movelist[j], -1);
                         }
                     }
                     if (best_move.captured() != 12) {
                         sd.move_order->caphist_update(best_move, 1);
+                        sd.move_order->small_caphist_update(best_move, 1);
                     }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
                         int correction_diff = std::clamp(best_score - static_eval, -256, 256);
@@ -240,7 +242,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         if (tt_hit && movelist[i] == entry.move()) {
             movelist[i].add_sortkey(30000);
         } else if (movelist[i].captured() != 12) {
-            movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]));
+            movelist[i].add_sortkey(5000 + 20000 * see(position, movelist[i], -274) + sd.move_order->caphist_score(movelist[i]) + sd.move_order->small_caphist_score(movelist[i]));
         } else {
             int sort_score = 15000;
             sort_score += sd.move_order->history_score(movelist[i]) / 2;
@@ -336,6 +338,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                             sd.move_order->continuation_update((ss - 1)->move, movelist[j], -(depth + 1) * (depth + 1));
                         } else {
                             sd.move_order->caphist_update(movelist[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->small_caphist_update(movelist[j], -(depth + 1) * (depth + 1));
                         }
                     }
                     if (best_move.captured() == 12) {
@@ -346,6 +349,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                         sd.move_order->killer_update(best_move, ss->ply);
                     } else {
                         sd.move_order->caphist_update(best_move, (depth + 1) * (depth + 1));
+                        sd.move_order->small_caphist_update(best_move, (depth + 1) * (depth + 1));
                     }
                     if (!in_check && (best_move == Move{} || best_move.captured() == 12) && !(best_score >= beta && best_score <= static_eval) && !(best_move == Move{} && best_score >= static_eval)) {
                         int correction_diff = std::clamp(best_score - static_eval, -256, 256);

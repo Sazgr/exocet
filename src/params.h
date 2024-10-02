@@ -30,6 +30,7 @@ struct Param {
 extern Param hst_gravity;
 extern Param bfh_gravity;
 extern Param cph_gravity;
+extern Param sch_gravity;
 extern Param cth_gravity;
 extern Param crh_gravity;
 extern Param crh_limit;

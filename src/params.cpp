@@ -11,6 +11,9 @@ Param bfh_gravity = Param("bfh_gravity", 596, 256, 2048, 50);
 //cph: capture history
 Param cph_gravity = Param("cph_gravity", 819, 256, 2048, 80);
 
+//sch: small capture history
+Param sch_gravity = Param("sch_gravity", 819, 256, 2048, 80);
+
 //cth: continuation history
 Param cth_gravity = Param("cth_gravity", 719, 256, 1024, 50);
 
