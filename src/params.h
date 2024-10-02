@@ -49,6 +49,7 @@ extern Param lmp_improving;
 extern Param lmr_base;
 extern Param lmr_divisor;
 extern Param hsl_divisor;
+extern Param chl_divisor;
 extern Param ntm_base;
 extern Param ntm_multiplier;
 extern Param ntm_minimum;

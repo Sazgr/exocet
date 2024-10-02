@@ -299,7 +299,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
             if (is_pv) --reduction;
             if (!improving) ++reduction;
             if (cutnode) ++reduction;
-            if (movelist[i].captured() != 12) --reduction;
+            if (movelist[i].captured() != 12) reduction -= 1 + std::clamp(static_cast<int>(movelist[i].sortkey() - 5000 + chl_divisor / 2) / chl_divisor, -2, 2);
             if (movelist[i].captured() == 12) reduction -= std::clamp(static_cast<int>(movelist[i].sortkey() - 15000 + hsl_divisor / 2) / hsl_divisor, -2, 2);
             reduction = std::clamp(reduction, 0, depth - 2); //ensure that lmr reduction does not drop into quiescence search
         }
