@@ -166,6 +166,9 @@ void Uci::handle_setoption(std::vector<std::string> tokens) {
                 param->value = stoi(tokens[4]);
             }
         }
+        if (tokens[2].substr(0, 3) == "lmr") {
+            fill_lmr_table();
+        }
     }
 }
 
