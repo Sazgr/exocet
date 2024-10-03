@@ -55,7 +55,7 @@ Param lmr_divisor = Param("lmr_divisor", 207, 100, 300, 20);
 Param hsl_divisor = Param("hsl_divisor", 205, 100, 600, 30);
 
 //chl: capture history lmr
-Param chl_divisor = Param("hsl_divisor", 80, 50, 200, 10);
+Param chl_divisor = Param("chl_divisor", 80, 50, 200, 10);
 
 //ntm: node time management
 Param ntm_base = Param("ntm_base", 161, 100, 200, 10);
