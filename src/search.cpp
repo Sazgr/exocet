@@ -423,6 +423,7 @@ void search_root(Position& position, Limit_timer& timer, Search_data& sd, bool o
             }
             if (score <= alpha) {
                 asp_reduction = 0;
+                beta = (alpha + beta) / 2;
                 alpha = std::max(score - delta, -20001);
             }
             if (score >= beta) {
