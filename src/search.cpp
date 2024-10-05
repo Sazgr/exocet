@@ -78,7 +78,6 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
-    int tt_flag = tt_alpha;
     if (in_check) {
         position.generate_stage<all>(movelist);
         for (int i{}; i < movelist.size(); ++i) {
@@ -117,7 +116,6 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
              if (score > alpha) {
                 alpha = score;
                 best_move = movelist[i];
-                tt_flag = tt_exact;
                 if (score > beta) {
                     for (int j{0}; j<i; ++j) {
                         if (movelist[j].captured() != 12) {
@@ -145,7 +143,7 @@ int qsearch(Position& position, Search_stack* ss, Search_data& sd, int alpha, in
         sd.move_order->correction_update(position.pawn_hashkey(), position.side_to_move, correction_diff, 1);
     }
     if (!sd.timer->stopped()) {
-        sd.hash_table->insert(position.hashkey(), best_score, tt_flag, best_move, 0);
+        sd.hash_table->insert(position.hashkey(), best_score, tt_alpha, best_move, 0);
     }
     return (*sd.timer).stopped() ? 0 : best_score;
 }
