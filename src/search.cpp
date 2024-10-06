@@ -180,6 +180,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     int legal_moves = 0;
     Move best_move{};
     Movelist movelist;
+    Movelist fail_low;
     int tt_flag = tt_alpha;
     bool improving = !in_check && ss->excluded.is_null() && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
     if (depth < 8 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
@@ -326,14 +327,14 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     memcpy(&sd.pv_table[ss->ply][1], &sd.pv_table[ss->ply + 1][0], sizeof(Move) * 127);
                 }
                 if (score > beta) {
-                    for (int j{0}; j<i; ++j) {
-                        if (movelist[j].captured() == 12) {
-                            sd.move_order->history_update(movelist[j], -(depth + 1) * (depth + 1));
-                            sd.move_order->butterfly_update(movelist[j], -(depth + 1) * (depth + 1));
-                            sd.move_order->continuation_update((ss - 2)->move, movelist[j], -(depth + 1) * (depth + 1));
-                            sd.move_order->continuation_update((ss - 1)->move, movelist[j], -(depth + 1) * (depth + 1));
+                    for (int j{0}; j < fail_low.size(); ++j) {
+                        if (fail_low[j].captured() == 12) {
+                            sd.move_order->history_update(fail_low[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->butterfly_update(fail_low[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->continuation_update((ss - 2)->move, fail_low[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->continuation_update((ss - 1)->move, fail_low[j], -(depth + 1) * (depth + 1));
                         } else {
-                            sd.move_order->caphist_update(movelist[j], -(depth + 1) * (depth + 1));
+                            sd.move_order->caphist_update(fail_low[j], -(depth + 1) * (depth + 1));
                         }
                     }
                     if (best_move.captured() == 12) {
@@ -352,6 +353,8 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
                     if (ss->excluded.is_null()) sd.hash_table->insert(position.hashkey(), best_score, tt_beta, best_move, depth);
                     return score;
                 }
+            } else {
+                fail_low.add(movelist[i]);
             }
         }
     }
