@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 
+#ifdef EXOCET_TUNE
+#define tunable
+#else
+#define tunable const
+#endif
+
 struct Param;
 
 extern std::vector<Param*> params;
@@ -27,34 +33,34 @@ struct Param {
     }
 };
 
-extern Param hst_gravity;
-extern Param bfh_gravity;
-extern Param cph_gravity;
-extern Param cth_gravity;
-extern Param crh_gravity;
-extern Param crh_limit;
-extern Param rfp_base;
-extern Param rfp_margin;
-extern Param rzr_base;
-extern Param rzr_margin;
-extern Param pbc_margin;
-extern Param klr_bonus_0;
-extern Param klr_bonus_1;
-extern Param spr_quiet_threshold;
-extern Param sxt_margin;
-extern Param dxt_margin;
-extern Param lmp_base;
-extern Param lmp_margin;
-extern Param lmp_improving;
-extern Param lmr_base;
-extern Param lmr_divisor;
-extern Param hsl_divisor;
-extern Param chl_divisor;
-extern Param ntm_base;
-extern Param ntm_multiplier;
-extern Param ntm_minimum;
-extern Param ntm_maximum;
-extern Param asp_initial;
-extern Param asp_multiplier;
+extern tunable Param hst_gravity;
+extern tunable Param bfh_gravity;
+extern tunable Param cph_gravity;
+extern tunable Param cth_gravity;
+extern tunable Param crh_gravity;
+extern tunable Param crh_limit;
+extern tunable Param rfp_base;
+extern tunable Param rfp_margin;
+extern tunable Param rzr_base;
+extern tunable Param rzr_margin;
+extern tunable Param pbc_margin;
+extern tunable Param klr_bonus_0;
+extern tunable Param klr_bonus_1;
+extern tunable Param spr_quiet_threshold;
+extern tunable Param sxt_margin;
+extern tunable Param dxt_margin;
+extern tunable Param lmp_base;
+extern tunable Param lmp_margin;
+extern tunable Param lmp_improving;
+extern tunable Param lmr_base;
+extern tunable Param lmr_divisor;
+extern tunable Param hsl_divisor;
+extern tunable Param chl_divisor;
+extern tunable Param ntm_base;
+extern tunable Param ntm_multiplier;
+extern tunable Param ntm_minimum;
+extern tunable Param ntm_maximum;
+extern tunable Param asp_initial;
+extern tunable Param asp_multiplier;
 
 #endif

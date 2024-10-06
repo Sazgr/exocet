@@ -161,6 +161,7 @@ void Uci::handle_setoption(std::vector<std::string> tokens) {
     } else if (tokens.size() >= 6 && tokens[2] == "Move" && tokens[3] == "Overhead" && tokens[4] == "value") {
         move_overhead = stoi(tokens[5]);
     } else { //it is a spsa parameter
+#ifndef EXOCET_TUNE
         for (Param* param : params) {
             if (tokens.size() >= 5 && tokens[2] == param->name && tokens[3] == "value") {
                 param->value = stoi(tokens[4]);
@@ -169,6 +170,7 @@ void Uci::handle_setoption(std::vector<std::string> tokens) {
         if (tokens[2].substr(0, 3) == "lmr") {
             fill_lmr_table();
         }
+#endif
     }
 }
 
