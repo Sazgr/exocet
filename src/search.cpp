@@ -292,9 +292,10 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
         ++legal_moves;
         (ss + 1)->ply = ss->ply + 1;
         int reduction = 0;
-        if (depth > 2 && !in_check && legal_moves > 2 + 2 * is_pv && movelist[i].sortkey() < 20000) {
+        if (depth > 2 && legal_moves > 2 + 2 * is_pv && movelist[i].sortkey() < 20000) {
             reduction = lmr_table[legal_moves][depth];
             if (is_pv) --reduction;
+            if (in_check) --reduction;
             if (!improving) ++reduction;
             if (cutnode) ++reduction;
             if (movelist[i].captured() != 12) reduction -= 1 + std::clamp(static_cast<int>(movelist[i].sortkey() - 5000 + chl_divisor / 2) / chl_divisor, -2, 2);
