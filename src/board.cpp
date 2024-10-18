@@ -496,10 +496,18 @@ void Position::nnue_update_accumulator(NNUE& nnue) {
 }
 
 int Position::static_eval(NNUE& nnue) {
-    nnue_update_accumulator(nnue);
-    int output_bucket = popcount(pieces[2] | pieces[3] | pieces[4] | pieces[5]) + 2 * popcount(pieces[6] | pieces[7]) + 4 * popcount(pieces[8] | pieces[9]) - 1;
-    output_bucket = std::clamp(output_bucket / 4, 0, output_buckets - 1);
-    return nnue.evaluate(side_to_move, output_bucket);
+    int eval = 0;
+    eval += popcount(pieces[side_to_move + 0]);
+    eval -= popcount(pieces[!side_to_move + 0]);
+    eval += 3 * popcount(pieces[side_to_move + 2]);
+    eval -= 3 * popcount(pieces[!side_to_move + 2]);
+    eval += 3 * popcount(pieces[side_to_move + 4]);
+    eval -= 3 * popcount(pieces[!side_to_move + 4]);
+    eval += 5 * popcount(pieces[side_to_move + 6]);
+    eval -= 5 * popcount(pieces[!side_to_move + 6]);
+    eval += 9 * popcount(pieces[side_to_move + 8]);
+    eval -= 9 * popcount(pieces[!side_to_move + 8]);
+    return 256 * eval;
 }
 
 void Position::recalculate_zobrist() {
