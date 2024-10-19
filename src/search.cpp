@@ -183,7 +183,7 @@ int search(Position& position, Search_stack* ss, Search_data& sd, int depth, int
     int tt_flag = tt_alpha;
     bool improving = !in_check && ss->excluded.is_null() && (ss - 2)->static_eval != -20001 && ss->static_eval > (ss - 2)->static_eval;
     if (depth < 8 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && (static_eval - rfp_base - rfp_margin * (depth - improving) >= beta)) {
-        return static_eval;
+        return (static_eval + beta) / 2;
     }
     if (depth > 2 && !(ss - 1)->move.is_null() && !is_pv && !in_check && ss->excluded.is_null() && beta > -18000 && static_eval > beta) {
         position.make_null();
